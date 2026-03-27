@@ -147,7 +147,7 @@
         html += '<div class="game-player-info' + (isActive ? ' active' : '') + '">';
         html += '<span>' + icon + ' ' + escHtml(name) + '</span>';
         if (pid === this._ctx.playerId) {
-          html += '<span style="font-size:0.75rem;opacity:0.7;margin-left:4px;">(you)</span>';
+          html += '<span style="font-size:0.75rem;opacity:0.7;margin-left:4px;">' + SpaceGames.t('you') + '</span>';
         }
         html += '</div>';
       }
@@ -169,10 +169,10 @@
       var icon = color === 'R' ? '\uD83D\uDD34' : '\uD83D\uDFE1';
 
       if (currentPlayerId === this._ctx.playerId) {
-        this._turnEl.textContent = icon + ' Your turn! Drop a piece.';
+        this._turnEl.textContent = icon + ' ' + SpaceGames.t('your_turn');
       } else {
         var name = this._getPlayerName(currentPlayerId);
-        this._turnEl.textContent = icon + ' ' + name + "'s turn";
+        this._turnEl.textContent = icon + ' ' + SpaceGames.t('waiting_for', {name: name});
       }
     },
 

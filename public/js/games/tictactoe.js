@@ -93,7 +93,7 @@
       if (isYou) {
         var youSpan = document.createElement('span');
         youSpan.className = 'gp-you';
-        youSpan.textContent = '(you)';
+        youSpan.textContent = SpaceGames.t('you');
         card.appendChild(youSpan);
       }
 
@@ -120,11 +120,11 @@
       var spectatingName = (_ctx.players && _ctx.players[currentTurnId(state)]) || 'a player';
       indicator.innerHTML = 'Watching \u2014 <span class="turn-name">' + esc(spectatingName) + '</span>\'s turn';
     } else if (isMyTurn(state)) {
-      indicator.innerHTML = 'Your turn';
+      indicator.innerHTML = SpaceGames.t('your_turn');
     } else {
       var oppId = currentTurnId(state);
       var oppName = (_ctx.players && _ctx.players[oppId]) || 'Opponent';
-      indicator.innerHTML = 'Waiting for <span class="turn-name">' + esc(oppName) + '</span>';
+      indicator.innerHTML = SpaceGames.t('waiting_for', {name: '<span class="turn-name">' + esc(oppName) + '</span>'});
     }
 
     _container.appendChild(indicator);

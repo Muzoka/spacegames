@@ -238,7 +238,7 @@
       whiteInfo.innerHTML = '<span class="chess-piece-icon">\u2654</span> ' + escapeHtml(getPlayerName('w'));
 
       var vs = document.createElement('span');
-      vs.textContent = ' vs ';
+      vs.textContent = ' ' + SpaceGames.t('vs') + ' ';
       vs.style.margin = '0 12px';
       vs.style.opacity = '0.5';
 
@@ -257,11 +257,13 @@
       div.className = 'game-turn-indicator';
       var turnColor = currentTurnColor();
       if (isMyTurn()) {
-        div.textContent = 'Your turn (' + (turnColor === 'w' ? 'White' : 'Black') + ')';
+        div.textContent = SpaceGames.t('your_turn') + ' (' + (turnColor === 'w' ? 'White' : 'Black') + ')';
       } else if (_myColor) {
-        div.textContent = (turnColor === 'w' ? 'White' : 'Black') + "'s turn";
+        var oppColorName = turnColor === 'w' ? 'White' : 'Black';
+        div.textContent = SpaceGames.t('waiting_for', {name: oppColorName});
       } else {
-        div.textContent = (turnColor === 'w' ? 'White' : 'Black') + "'s turn (spectating)";
+        var specColorName = turnColor === 'w' ? 'White' : 'Black';
+        div.textContent = SpaceGames.t('waiting_for', {name: specColorName}) + ' - ' + SpaceGames.t('spectating');
       }
       return div;
     }

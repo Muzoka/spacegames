@@ -7,7 +7,8 @@
 
   var CHOICES = ['rock', 'paper', 'scissors'];
   var CHOICE_EMOJI = { rock: '\uD83E\uDEA8', paper: '\uD83D\uDCC4', scissors: '\u2702\uFE0F' };
-  var CHOICE_LABEL = { rock: 'Rock', paper: 'Paper', scissors: 'Scissors' };
+  var CHOICE_LABEL = { rock: function(){ return SpaceGames.t('rps_rock'); }, paper: function(){ return SpaceGames.t('rps_paper'); }, scissors: function(){ return SpaceGames.t('rps_scissors'); } };
+  function choiceLabel(c) { var fn = CHOICE_LABEL[c]; return fn ? fn() : c; }
   var HIDDEN_EMOJI = '\u2753';
 
   // ─── Handler ───
@@ -69,13 +70,13 @@
 
       // Round header
       html += '<div style="font-size:1.1rem;color:var(--text-muted);margin-bottom:6px;">';
-      html += 'Round ' + state.round + ' of ' + state.maxRounds;
+      html += SpaceGames.t('round_of', {n: state.round, t: state.maxRounds});
       html += '</div>';
 
       // Score display
       html += '<div class="rps-score-display">';
       html += '<span>' + escHtml(myName) + ': <strong>' + myScore + '</strong></span>';
-      html += '<span style="color:var(--text-dim);margin:0 12px;">vs</span>';
+      html += '<span style="color:var(--text-dim);margin:0 12px;">' + SpaceGames.t('vs') + '</span>';
       html += '<span>' + escHtml(opName) + ': <strong>' + opScore + '</strong></span>';
       html += '</div>';
 
@@ -88,7 +89,7 @@
         var hasChosen = state.pendingChoices && state.pendingChoices[pid];
         html += '<div class="game-player-info' + (hasChosen ? ' active' : '') + '">';
         html += '<span>' + escHtml(name) + '</span>';
-        if (isMe) html += '<span style="font-size:0.75rem;opacity:0.7;margin-left:4px;">(you)</span>';
+        if (isMe) html += '<span style="font-size:0.75rem;opacity:0.7;margin-left:4px;">' + SpaceGames.t('you') + '</span>';
         if (hasChosen) html += '<span style="font-size:0.75rem;color:var(--success);margin-left:6px;">\u2714</span>';
         html += '</div>';
       }
@@ -96,20 +97,20 @@
 
       // Choice buttons (only for players who haven't chosen yet)
       if (isPlayer && !iHaveChosen) {
-        html += '<div style="font-size:0.95rem;color:var(--text-muted);margin-bottom:12px;">Choose your weapon!</div>';
+        html += '<div style="font-size:0.95rem;color:var(--text-muted);margin-bottom:12px;">' + SpaceGames.t('rps_choose') + '</div>';
         html += '<div class="rps-choices">';
         for (var c = 0; c < CHOICES.length; c++) {
           var choice = CHOICES[c];
           html += '<button class="rps-choice" data-choice="' + choice + '">';
           html += '<span style="font-size:2.5rem;">' + CHOICE_EMOJI[choice] + '</span>';
-          html += '<span style="font-size:0.8rem;margin-top:4px;">' + CHOICE_LABEL[choice] + '</span>';
+          html += '<span style="font-size:0.8rem;margin-top:4px;">' + choiceLabel(choice) + '</span>';
           html += '</button>';
         }
         html += '</div>';
       } else if (isPlayer && iHaveChosen) {
         // I have chosen, show my selection and waiting state
         html += '<div style="font-size:0.95rem;color:var(--success);margin-bottom:12px;">';
-        html += '\u2714 You chose ' + (this._myChoice ? CHOICE_EMOJI[this._myChoice] + ' ' + CHOICE_LABEL[this._myChoice] : 'your weapon') + '!';
+        html += '\u2714 ' + SpaceGames.t('rps_you_chose') + ' ' + (this._myChoice ? CHOICE_EMOJI[this._myChoice] + ' ' + choiceLabel(this._myChoice) : '');
         html += '</div>';
         html += '<div class="rps-choices">';
         for (var c2 = 0; c2 < CHOICES.length; c2++) {
@@ -117,14 +118,14 @@
           var isSelected = this._myChoice === ch;
           html += '<button class="rps-choice' + (isSelected ? ' selected' : ' disabled') + '" disabled>';
           html += '<span style="font-size:2.5rem;">' + CHOICE_EMOJI[ch] + '</span>';
-          html += '<span style="font-size:0.8rem;margin-top:4px;">' + CHOICE_LABEL[ch] + '</span>';
+          html += '<span style="font-size:0.8rem;margin-top:4px;">' + choiceLabel(ch) + '</span>';
           html += '</button>';
         }
         html += '</div>';
 
         if (!opponentHasChosen) {
           html += '<div style="margin-top:16px;color:var(--text-dim);font-size:0.9rem;">';
-          html += '<span class="rps-waiting-dots">Waiting for opponent</span>';
+          html += '<span class="rps-waiting-dots">' + SpaceGames.t('rps_waiting') + '</span>';
           html += '</div>';
         }
       } else {
@@ -135,7 +136,7 @@
         html += '<div style="font-size:0.85rem;color:var(--text-muted);">' + escHtml(this._getPlayerName(state.players[0])) + '</div>';
         html += '<div class="rps-player-choice">' + (state.pendingChoices[state.players[0]] ? HIDDEN_EMOJI : '\u23F3') + '</div>';
         html += '</div>';
-        html += '<div style="font-size:1.5rem;color:var(--text-dim);">VS</div>';
+        html += '<div style="font-size:1.5rem;color:var(--text-dim);">' + SpaceGames.t('vs').toUpperCase() + '</div>';
         html += '<div class="rps-player-card">';
         html += '<div style="font-size:0.85rem;color:var(--text-muted);">' + escHtml(this._getPlayerName(state.players[1])) + '</div>';
         html += '<div class="rps-player-choice">' + (state.pendingChoices[state.players[1]] ? HIDDEN_EMOJI : '\u23F3') + '</div>';
@@ -190,13 +191,13 @@
 
       var resultText, resultClass;
       if (winner === null) {
-        resultText = "It's a Draw!";
+        resultText = SpaceGames.t('draw');
         resultClass = 'draw';
       } else if (winner === me) {
-        resultText = 'You Win This Round!';
+        resultText = SpaceGames.t('win');
         resultClass = 'win';
       } else {
-        resultText = 'You Lose This Round!';
+        resultText = SpaceGames.t('lose');
         resultClass = 'lose';
       }
 
@@ -235,13 +236,13 @@
 
       // Round header
       html += '<div style="font-size:1.1rem;color:var(--text-muted);margin-bottom:6px;">';
-      html += 'Round ' + state.round + ' of ' + state.maxRounds;
+      html += SpaceGames.t('round_of', {n: state.round, t: state.maxRounds});
       html += '</div>';
 
       // Score
       html += '<div class="rps-score-display">';
       html += '<span>' + escHtml(myName) + ': <strong>' + myScore + '</strong></span>';
-      html += '<span style="color:var(--text-dim);margin:0 12px;">vs</span>';
+      html += '<span style="color:var(--text-dim);margin:0 12px;">' + SpaceGames.t('vs') + '</span>';
       html += '<span>' + escHtml(opName) + ': <strong>' + opScore + '</strong></span>';
       html += '</div>';
 
@@ -257,7 +258,7 @@
       html += '<div style="font-size:0.85rem;color:var(--text-muted);">' + escHtml(myName) + '</div>';
       html += '<div class="rps-player-choice" style="animation:shake 0.3s infinite;">' + HIDDEN_EMOJI + '</div>';
       html += '</div>';
-      html += '<div style="font-size:1.5rem;font-weight:700;color:var(--text-dim);">VS</div>';
+      html += '<div style="font-size:1.5rem;font-weight:700;color:var(--text-dim);">' + SpaceGames.t('vs').toUpperCase() + '</div>';
       html += '<div class="rps-player-card">';
       html += '<div style="font-size:0.85rem;color:var(--text-muted);">' + escHtml(opName) + '</div>';
       html += '<div class="rps-player-choice" style="animation:shake 0.3s infinite;">' + HIDDEN_EMOJI + '</div>';
@@ -276,13 +277,13 @@
 
       // Round header
       html += '<div style="font-size:1.1rem;color:var(--text-muted);margin-bottom:6px;">';
-      html += 'Round ' + state.round + ' of ' + state.maxRounds;
+      html += SpaceGames.t('round_of', {n: state.round, t: state.maxRounds});
       html += '</div>';
 
       // Score
       html += '<div class="rps-score-display">';
       html += '<span>' + escHtml(myName) + ': <strong>' + myScore + '</strong></span>';
-      html += '<span style="color:var(--text-dim);margin:0 12px;">vs</span>';
+      html += '<span style="color:var(--text-dim);margin:0 12px;">' + SpaceGames.t('vs') + '</span>';
       html += '<span>' + escHtml(opName) + ': <strong>' + opScore + '</strong></span>';
       html += '</div>';
 
@@ -291,13 +292,13 @@
       html += '<div class="rps-player-card">';
       html += '<div style="font-size:0.85rem;color:var(--text-muted);">' + escHtml(myName) + '</div>';
       html += '<div class="rps-player-choice" style="animation:bounceIn 0.4s ease-out;">' + (CHOICE_EMOJI[myChoice] || HIDDEN_EMOJI) + '</div>';
-      html += '<div style="font-size:0.8rem;color:var(--text-muted);">' + (CHOICE_LABEL[myChoice] || '') + '</div>';
+      html += '<div style="font-size:0.8rem;color:var(--text-muted);">' + (choiceLabel(myChoice) || '') + '</div>';
       html += '</div>';
-      html += '<div style="font-size:1.5rem;font-weight:700;color:var(--text-dim);">VS</div>';
+      html += '<div style="font-size:1.5rem;font-weight:700;color:var(--text-dim);">' + SpaceGames.t('vs').toUpperCase() + '</div>';
       html += '<div class="rps-player-card">';
       html += '<div style="font-size:0.85rem;color:var(--text-muted);">' + escHtml(opName) + '</div>';
       html += '<div class="rps-player-choice" style="animation:bounceIn 0.4s ease-out;">' + (CHOICE_EMOJI[opChoice] || HIDDEN_EMOJI) + '</div>';
-      html += '<div style="font-size:0.8rem;color:var(--text-muted);">' + (CHOICE_LABEL[opChoice] || '') + '</div>';
+      html += '<div style="font-size:0.8rem;color:var(--text-muted);">' + (choiceLabel(opChoice) || '') + '</div>';
       html += '</div>';
       html += '</div>';
 

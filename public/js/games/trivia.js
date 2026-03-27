@@ -62,7 +62,7 @@
       var html = '';
 
       // Progress
-      html += '<div class="trivia-progress">Question ' + state.currentQ + ' of ' + state.totalQuestions + '</div>';
+      html += '<div class="trivia-progress">' + SpaceGames.t('question_of', {n: state.currentQ, t: state.totalQuestions}) + '</div>';
 
       // Category badge
       if (q && q.category) {

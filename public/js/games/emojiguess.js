@@ -64,13 +64,13 @@
 
       this._inputEl = document.createElement('input');
       this._inputEl.type = 'text';
-      this._inputEl.placeholder = 'Type your guess...';
+      this._inputEl.placeholder = SpaceGames.t('type_guess');
       this._inputEl.autocomplete = 'off';
       this._inputEl.addEventListener('keydown', this._onKeyDown.bind(this));
       inputRow.appendChild(this._inputEl);
 
       this._submitBtn = document.createElement('button');
-      this._submitBtn.textContent = 'Submit';
+      this._submitBtn.textContent = SpaceGames.t('btn_submit');
       this._submitBtn.addEventListener('click', this._onSubmit.bind(this));
       inputRow.appendChild(this._submitBtn);
 
@@ -117,11 +117,11 @@
       // Show solved or timeout message
       if (data.state.solved && data.state.answer) {
         var solverName = this._getPlayerName(data.state.solvedBy);
-        this._statusEl.textContent = 'Correct! ' + data.state.answer + ' - Solved by ' + solverName + '!';
+        this._statusEl.textContent = SpaceGames.t('solved_by', {name: solverName}) + ' ' + SpaceGames.t('answer_was', {a: data.state.answer});
         this._statusEl.className = 'eg-status eg-solved';
         this._disableInput();
       } else if (data.timeout && data.state.answer) {
-        this._statusEl.textContent = "Time's up! Answer: " + data.state.answer;
+        this._statusEl.textContent = SpaceGames.t('times_up') + ' ' + SpaceGames.t('answer_was', {a: data.state.answer});
         this._statusEl.className = 'eg-status eg-timeout';
         this._disableInput();
       } else {
@@ -159,7 +159,7 @@
 
       // Progress
       if (this._progressEl) {
-        this._progressEl.textContent = 'Puzzle ' + (state.currentPuzzle + 1) + ' of ' + state.totalPuzzles;
+        this._progressEl.textContent = SpaceGames.t('puzzle_of', {n: state.currentPuzzle + 1, t: state.totalPuzzles});
       }
 
       // Category badge
@@ -174,7 +174,7 @@
 
       // Hint
       if (this._hintEl) {
-        this._hintEl.textContent = state.hint ? 'Hint: ' + state.hint : '';
+        this._hintEl.textContent = state.hint ? SpaceGames.t('hm_hint') + ': ' + state.hint : '';
       }
 
       // Scores
@@ -189,7 +189,7 @@
       var scores = state.scores || {};
       var playerIds = state.players || [];
 
-      var html = '<div class="eg-scores-title">Scores</div>';
+      var html = '<div class="eg-scores-title">' + SpaceGames.t('score') + '</div>';
 
       for (var i = 0; i < playerIds.length; i++) {
         var pid = playerIds[i];
@@ -199,7 +199,7 @@
 
         html += '<div class="eg-score-row' + (isMe ? ' eg-score-me' : '') + '">';
         html += '<span class="eg-score-name">' + escHtml(name);
-        if (isMe) html += ' <span class="eg-score-you">(you)</span>';
+        if (isMe) html += ' <span class="eg-score-you">' + SpaceGames.t('you') + '</span>';
         html += '</span>';
         html += '<span class="eg-score-val">' + score + '</span>';
         html += '</div>';

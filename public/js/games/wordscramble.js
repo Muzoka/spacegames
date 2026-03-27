@@ -61,13 +61,13 @@
 
       this._inputEl = document.createElement('input');
       this._inputEl.type = 'text';
-      this._inputEl.placeholder = 'Type your guess...';
+      this._inputEl.placeholder = SpaceGames.t('type_guess');
       this._inputEl.autocomplete = 'off';
       this._inputEl.addEventListener('keydown', this._onKeyDown.bind(this));
       this._inputRowEl.appendChild(this._inputEl);
 
       this._submitBtn = document.createElement('button');
-      this._submitBtn.textContent = 'Submit';
+      this._submitBtn.textContent = SpaceGames.t('btn_submit');
       this._submitBtn.addEventListener('click', this._onSubmit.bind(this));
       this._inputRowEl.appendChild(this._submitBtn);
 
@@ -109,10 +109,10 @@
       // Determine message to show
       if (data.state.solved && data.state.solvedBy) {
         var solverName = this._getPlayerName(data.state.solvedBy);
-        this._messageEl.textContent = 'Solved by ' + solverName + '!';
+        this._messageEl.textContent = SpaceGames.t('solved_by', {name: solverName});
         this._messageEl.className = 'ws-message ws-solved';
       } else if (data.timeout) {
-        this._messageEl.textContent = 'Time\'s up! The word was ' + (data.state.correctWord || '???');
+        this._messageEl.textContent = SpaceGames.t('times_up') + ' ' + SpaceGames.t('answer_was', {a: (data.state.correctWord || '???')});
         this._messageEl.className = 'ws-message ws-timeout';
       } else {
         // New word round - clear the message and reset input
@@ -136,7 +136,7 @@
 
       // Progress
       if (this._progressEl) {
-        this._progressEl.textContent = 'Word ' + (state.currentWord + 1) + ' of ' + state.totalWords;
+        this._progressEl.textContent = SpaceGames.t('word_of', {n: state.currentWord + 1, t: state.totalWords});
       }
 
       // Scrambled letters
@@ -146,7 +146,7 @@
 
       // Hint
       if (this._hintEl) {
-        this._hintEl.textContent = state.hint ? 'Hint: ' + state.hint : '';
+        this._hintEl.textContent = state.hint ? SpaceGames.t('hm_hint') + ': ' + state.hint : '';
       }
 
       // Disable input when the round is solved
@@ -174,7 +174,7 @@
       var scores = state.scores || {};
       var playerIds = state.players || [];
 
-      var html = '<div class="ws-scores-title">Scores</div>';
+      var html = '<div class="ws-scores-title">' + SpaceGames.t('score') + '</div>';
       for (var i = 0; i < playerIds.length; i++) {
         var pid = playerIds[i];
         var name = this._getPlayerName(pid);

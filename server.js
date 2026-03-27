@@ -51,6 +51,284 @@ function updateLeaderboard(playerName, gameType, result) {
 // ═══════════════════════════════════════
 const AVATARS = ['😎','🤠','👾','🦊','🐱','🦁','🐺','🦅','🐉','🎃','👻','🤖','🧙','🥷','🏴‍☠️','🦄','🐧','🦋','🔥','⚡','🌟','💎','🎭','🃏'];
 
+// ═══════════════════════════════════════
+// BOT SYSTEM
+// ═══════════════════════════════════════
+const BOT_NAMES = ['Circuit','Nova','Pixel','Spark','Orbit','Cosmo','Glitch','Neon','Turbo','Blitz','Quasar','Vector','Byte','Cipher','Prism','Zenith','Echo','Flux','Drift','Pulse'];
+let botCounter = 0;
+const botTimers = new Map();
+
+function generateBotId() { return 'bot_' + (++botCounter) + '_' + Date.now().toString(36); }
+function isBot(pid) { return typeof pid === 'string' && pid.startsWith('bot_'); }
+
+function addBotToRoom(room, difficulty) {
+  if (room.players.size >= 20) return null;
+  const usedNames = new Set(Array.from(room.players.values()).map(p => p.name));
+  const available = BOT_NAMES.filter(n => !usedNames.has(n));
+  const name = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : 'Bot-' + Math.floor(Math.random() * 999);
+  const botId = generateBotId();
+  const bot = { id: botId, name, score: 0, gamesPlayed: 0, wins: 0, avatar: '🤖', level: 0, isBot: true, difficulty };
+  room.players.set(botId, bot);
+  return bot;
+}
+
+function removeBotFromRoom(room, botId) { room.players.delete(botId); }
+function removeAllBotsFromRoom(room) { for (const [id] of room.players) { if (isBot(id)) room.players.delete(id); } }
+
+function clearBotTimers(code) {
+  const timers = botTimers.get(code);
+  if (timers) { timers.forEach(t => clearTimeout(t)); botTimers.delete(code); }
+}
+
+function scheduleBotTimer(code, fn, delay) {
+  if (!botTimers.has(code)) botTimers.set(code, []);
+  const tid = setTimeout(() => {
+    const timers = botTimers.get(code);
+    if (timers) { const i = timers.indexOf(tid); if (i >= 0) timers.splice(i, 1); }
+    fn();
+  }, delay);
+  botTimers.get(code).push(tid);
+}
+
+function getBotDelay(difficulty, gameType) {
+  const base = { easy: [2000,4500], medium: [1000,2500], hard: [400,1200] };
+  const timed = ['trivia','wordscramble','emojiguess','hangman','fastmath'].includes(gameType);
+  let [min, max] = base[difficulty] || base.medium;
+  if (timed) { min = Math.floor(min * 0.5); max = Math.floor(max * 0.55); }
+  return min + Math.floor(Math.random() * (max - min));
+}
+
+// ─── Bot AI per game ───
+const botAI = {
+  tictactoe(state, botId, diff) {
+    const board = state.board;
+    const mark = state.marks[botId];
+    const opp = mark === 'X' ? 'O' : 'X';
+    if (diff === 'hard' || (diff === 'medium' && Math.random() < 0.5)) {
+      // Minimax
+      function minimax(b, isMax, depth) {
+        const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        for (const [a,c,d] of lines) { if (b[a] && b[a]===b[c] && b[a]===b[d]) return b[a]===mark ? 10-depth : depth-10; }
+        const empty = b.reduce((a,v,i) => v===null?[...a,i]:a, []);
+        if (empty.length === 0) return 0;
+        let best = isMax ? -Infinity : Infinity;
+        for (const i of empty) { b[i] = isMax ? mark : opp; const s = minimax(b, !isMax, depth+1); b[i] = null; best = isMax ? Math.max(best,s) : Math.min(best,s); }
+        return best;
+      }
+      let bestMove = -1, bestScore = -Infinity;
+      const empty = board.reduce((a,v,i) => v===null?[...a,i]:a, []);
+      for (const i of empty) { board[i] = mark; const s = minimax(board, false, 0); board[i] = null; if (s > bestScore) { bestScore = s; bestMove = i; } }
+      if (bestMove >= 0) return { cell: bestMove };
+    }
+    const empty = board.reduce((a,v,i) => v===null?[...a,i]:a, []);
+    return empty.length > 0 ? { cell: empty[Math.floor(Math.random() * empty.length)] } : null;
+  },
+
+  connect4(state, botId, diff) {
+    const board = state.board;
+    const myColor = state.colors[botId];
+    const oppColor = myColor === 'R' ? 'Y' : 'R';
+    function canPlace(col) { return board[0][col] === null; }
+    function getRow(col) { for (let r=5;r>=0;r--) if (board[r][col]===null) return r; return -1; }
+    function checkWinAt(b, r, c, color) {
+      const dirs=[[0,1],[1,0],[1,1],[1,-1]];
+      for (const [dr,dc] of dirs) { let cnt=1; for (let d=1;d<4;d++){const nr=r+dr*d,nc=c+dc*d;if(nr<0||nr>=6||nc<0||nc>=7||b[nr][nc]!==color)break;cnt++;} for(let d=1;d<4;d++){const nr=r-dr*d,nc=c-dc*d;if(nr<0||nr>=6||nc<0||nc>=7||b[nr][nc]!==color)break;cnt++;} if(cnt>=4)return true; }
+      return false;
+    }
+    const validCols = [0,1,2,3,4,5,6].filter(canPlace);
+    if (validCols.length === 0) return null;
+    if (diff === 'hard' || diff === 'medium') {
+      // Check for winning move
+      for (const c of validCols) { const r=getRow(c); board[r][c]=myColor; if(checkWinAt(board,r,c,myColor)){board[r][c]=null;return{col:c};} board[r][c]=null; }
+      // Block opponent win
+      for (const c of validCols) { const r=getRow(c); board[r][c]=oppColor; if(checkWinAt(board,r,c,oppColor)){board[r][c]=null;return{col:c};} board[r][c]=null; }
+      if (diff === 'hard') {
+        // Prefer center columns
+        const scored = validCols.map(c => ({ col: c, score: 3 - Math.abs(c - 3) })).sort((a,b) => b.score - a.score);
+        return { col: scored[0].col };
+      }
+    }
+    return { col: validCols[Math.floor(Math.random() * validCols.length)] };
+  },
+
+  chess(state, botId, diff) {
+    const board = state.board;
+    const color = state.colors[botId];
+    const moves = [];
+    // Generate all pseudo-legal moves for bot's pieces
+    for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+      const p = board[r][c];
+      if (!p || p[0] !== color) continue;
+      const dests = getChessMovesServer(board, r, c, state);
+      for (const [tr,tc] of dests) moves.push({fromR:r,fromC:c,toR:tr,toC:tc});
+    }
+    if (moves.length === 0) return null;
+    if (diff === 'hard') {
+      // Pick best capture by piece value
+      const vals = {p:1,n:3,b:3,r:5,q:9,k:0};
+      const scored = moves.map(m => {
+        const target = board[m.toR][m.toC];
+        return { ...m, score: target ? (vals[target[1]]||0)*10 : 0 };
+      }).sort((a,b) => b.score - a.score);
+      // Among top captures (or all if no captures), pick randomly
+      const topScore = scored[0].score;
+      const best = scored.filter(m => m.score === topScore);
+      const pick = best[Math.floor(Math.random() * best.length)];
+      return { fromR: pick.fromR, fromC: pick.fromC, toR: pick.toR, toC: pick.toC };
+    }
+    if (diff === 'medium') {
+      // Prefer captures
+      const captures = moves.filter(m => board[m.toR][m.toC]);
+      if (captures.length > 0 && Math.random() < 0.7) { const m = captures[Math.floor(Math.random()*captures.length)]; return m; }
+    }
+    return moves[Math.floor(Math.random() * moves.length)];
+  },
+
+  rps(state, botId, diff) {
+    const choices = ['rock','paper','scissors'];
+    if (diff === 'hard' && state.history.length > 0) {
+      const oppId = state.players.find(p => p !== botId);
+      const oppChoices = state.history.map(h => h.choices[oppId]).filter(Boolean);
+      if (oppChoices.length > 0) {
+        const freq = {rock:0,paper:0,scissors:0};
+        oppChoices.forEach(c => freq[c]++);
+        const most = Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];
+        const counter = {rock:'paper',paper:'scissors',scissors:'rock'};
+        return { choice: counter[most] };
+      }
+    }
+    return { choice: choices[Math.floor(Math.random() * choices.length)] };
+  },
+
+  trivia(state, botId, diff) {
+    const correct = state.questions[state.currentQ].correct;
+    const prob = diff === 'easy' ? 0.3 : diff === 'medium' ? 0.6 : 0.85;
+    if (Math.random() < prob) return { answer: correct };
+    const wrong = [0,1,2,3].filter(i => i !== correct);
+    return { answer: wrong[Math.floor(Math.random() * wrong.length)] };
+  },
+
+  wordscramble(state, botId, diff) {
+    const prob = diff === 'easy' ? 0.2 : diff === 'medium' ? 0.5 : 0.8;
+    if (Math.random() < prob) return { guess: state.words[state.currentWord].word };
+    return null; // abstain
+  },
+
+  emojiguess(state, botId, diff) {
+    const prob = diff === 'easy' ? 0.2 : diff === 'medium' ? 0.5 : 0.8;
+    if (Math.random() < prob) return { guess: state.puzzles[state.currentPuzzle].answers[0] };
+    return null;
+  },
+
+  hangman(state, botId, diff) {
+    const word = state.actualWord;
+    const guessed = new Set([...state.revealed.filter(c=>c!=='_'), ...state.wrongLetters]);
+    const unguessed = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').filter(c => !guessed.has(c));
+    if (unguessed.length === 0) return null;
+    const prob = diff === 'easy' ? 0.3 : diff === 'medium' ? 0.6 : 0.85;
+    if (Math.random() < prob) {
+      const correctLetters = [...new Set(word.split(''))].filter(c => !guessed.has(c));
+      if (correctLetters.length > 0) return { letter: correctLetters[Math.floor(Math.random() * correctLetters.length)] };
+    }
+    return { letter: unguessed[Math.floor(Math.random() * unguessed.length)] };
+  },
+
+  fastmath(state, botId, diff) {
+    const correct = state.problems[state.currentProblem].answer;
+    const prob = diff === 'easy' ? 0.3 : diff === 'medium' ? 0.6 : 0.9;
+    if (Math.random() < prob) return { answer: String(correct) };
+    return null; // abstain
+  }
+};
+
+// ─── Chess move generation for bots ───
+function getChessMovesServer(board, r, c, state) {
+  const piece = board[r][c]; if (!piece) return [];
+  const color = piece[0], type = piece[1], moves = [];
+  function inBounds(r,c) { return r>=0&&r<8&&c>=0&&c<8; }
+  function addIf(tr,tc) { if (inBounds(tr,tc) && (!board[tr][tc] || board[tr][tc][0]!==color)) moves.push([tr,tc]); }
+  function slide(dr,dc) { for(let i=1;i<8;i++){const tr=r+dr*i,tc=c+dc*i;if(!inBounds(tr,tc))break;if(board[tr][tc]){if(board[tr][tc][0]!==color)moves.push([tr,tc]);break;}moves.push([tr,tc]);} }
+  if (type==='p') {
+    const dir=color==='w'?-1:1, start=color==='w'?6:1;
+    if(inBounds(r+dir,c)&&!board[r+dir][c]){moves.push([r+dir,c]);if(r===start&&!board[r+2*dir][c])moves.push([r+2*dir,c]);}
+    if(inBounds(r+dir,c-1)&&board[r+dir][c-1]&&board[r+dir][c-1][0]!==color)moves.push([r+dir,c-1]);
+    if(inBounds(r+dir,c+1)&&board[r+dir][c+1]&&board[r+dir][c+1][0]!==color)moves.push([r+dir,c+1]);
+  } else if (type==='n') { [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dr,dc])=>addIf(r+dr,c+dc)); }
+  else if (type==='b') { [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>slide(dr,dc)); }
+  else if (type==='r') { [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>slide(dr,dc)); }
+  else if (type==='q') { [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>slide(dr,dc)); }
+  else if (type==='k') { [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr,dc])=>addIf(r+dr,c+dc)); }
+  return moves;
+}
+
+// ─── Bot move scheduling ───
+function scheduleBotMoves(roomCode, gameType) {
+  const room = rooms.get(roomCode);
+  if (!room || !room.gameState || !room.currentGame) return;
+  const state = room.gameState, engine = gameEngines[gameType];
+  if (!engine) return;
+
+  if (['tictactoe','connect4','chess'].includes(gameType)) {
+    const idx = state.turn % 2;
+    const pid = state.players[idx];
+    if (!isBot(pid)) return;
+    const bot = room.players.get(pid);
+    if (!bot) return;
+    scheduleBotTimer(roomCode, () => executeBotMove(roomCode, pid, gameType), getBotDelay(bot.difficulty, gameType));
+  } else if (gameType === 'rps') {
+    for (const pid of state.players) {
+      if (isBot(pid) && !state.choices[pid]) {
+        const bot = room.players.get(pid);
+        if (bot) scheduleBotTimer(roomCode, () => executeBotMove(roomCode, pid, gameType), getBotDelay(bot.difficulty, gameType));
+      }
+    }
+  } else {
+    for (const pid of state.players) {
+      if (!isBot(pid)) continue;
+      if (gameType === 'trivia' && state.answered && state.answered[pid] !== undefined) continue;
+      if (['wordscramble','emojiguess','fastmath'].includes(gameType) && state.solved) continue;
+      if (gameType === 'hangman' && (state.solved || state.failed)) continue;
+      const bot = room.players.get(pid);
+      if (bot) scheduleBotTimer(roomCode, () => executeBotMove(roomCode, pid, gameType), getBotDelay(bot.difficulty, gameType));
+    }
+  }
+}
+
+function executeBotMove(roomCode, botId, gameType) {
+  const room = rooms.get(roomCode);
+  if (!room || !room.gameState || room.currentGame !== gameType) return;
+  const state = room.gameState, engine = gameEngines[gameType];
+  if (!engine) return;
+  const bot = room.players.get(botId);
+  if (!bot) return;
+  const move = botAI[gameType](state, botId, bot.difficulty);
+  if (!move) return;
+  const error = engine.validate(state, botId, move);
+  if (error) return;
+  engine.apply(state, botId, move);
+  io.to(roomCode).emit('game-update', { state: sanitizeState(gameType, state), lastMove: move, playerId: botId });
+
+  const result = engine.checkEnd(state);
+  if (result) { endGame(roomCode, room, result); return; }
+
+  // Handle round transitions
+  if (state.phase === 'reveal' && gameType === 'trivia') {
+    clearGameTimer(roomCode); clearBotTimers(roomCode);
+    setTimeout(() => { if(!room.currentGame)return; engine.nextQuestion(state); const e=engine.checkEnd(state); if(e){endGame(roomCode,room,e);return;} io.to(roomCode).emit('game-update',{state:sanitizeState(gameType,state)}); startGameTimer(roomCode,state.timer,()=>handleGameTimeout(roomCode,gameType)); scheduleBotMoves(roomCode,gameType); }, 3000);
+  } else if (state.solved && ['wordscramble','emojiguess','fastmath'].includes(gameType)) {
+    clearGameTimer(roomCode); clearBotTimers(roomCode);
+    setTimeout(() => { if(!room.currentGame)return; if(engine.nextPuzzle)engine.nextPuzzle(state);else if(engine.nextWord)engine.nextWord(state);else if(engine.nextProblem)engine.nextProblem(state); const e=engine.checkEnd(state); if(e){endGame(roomCode,room,e);return;} io.to(roomCode).emit('game-update',{state:sanitizeState(gameType,state)}); startGameTimer(roomCode,state.timer,()=>handleGameTimeout(roomCode,gameType)); scheduleBotMoves(roomCode,gameType); }, 2500);
+  } else if (state.solved && gameType === 'hangman') {
+    clearGameTimer(roomCode); clearBotTimers(roomCode);
+    setTimeout(() => { if(!room.currentGame)return; engine.nextWord(state); const e=engine.checkEnd(state); if(e){endGame(roomCode,room,e);return;} io.to(roomCode).emit('game-update',{state:sanitizeState(gameType,state)}); startGameTimer(roomCode,state.timer,()=>handleGameTimeout(roomCode,gameType)); scheduleBotMoves(roomCode,gameType); }, 2500);
+  } else if (state.failed && gameType === 'hangman') {
+    clearGameTimer(roomCode); clearBotTimers(roomCode);
+    setTimeout(() => { if(!room.currentGame)return; engine.nextWord(state); const e=engine.checkEnd(state); if(e){endGame(roomCode,room,e);return;} io.to(roomCode).emit('game-update',{state:sanitizeState(gameType,state)}); startGameTimer(roomCode,state.timer,()=>handleGameTimeout(roomCode,gameType)); scheduleBotMoves(roomCode,gameType); }, 3000);
+  } else {
+    scheduleBotMoves(roomCode, gameType);
+  }
+}
+
 function ensureProfile(playerName) {
   const key = playerName.toLowerCase();
   if (!leaderboard[key]) {
@@ -63,10 +341,45 @@ function ensureProfile(playerName) {
   if (!p.streak) p.streak = 0;
   if (!p.maxStreak) p.maxStreak = 0;
   if (!p.messages) p.messages = 0;
+  if (p.selectedTitle === undefined) p.selectedTitle = null;
+  const today = new Date().toISOString().split('T')[0];
+  if (!p.dailyChallenge || p.dailyChallenge.date !== today) {
+    p.dailyChallenge = { date: today, progress: 0, completed: false, typesPlayed: [] };
+  }
   return p;
 }
 
 function calculateLevel(xp) { return Math.floor(Math.sqrt((xp || 0) / 100)) + 1; }
+
+// ═══════════════════════════════════════
+// TITLES & DAILY CHALLENGES
+// ═══════════════════════════════════════
+const TITLE_MAP = {
+  first_blood:{icon:'🗡️',en:'First Blood',ar:'الضربة الأولى'},
+  streak_3:{icon:'🔥',en:'On Fire',ar:'مشتعل'}, streak_5:{icon:'🔥🔥',en:'Blazing',ar:'ملتهب'},
+  streak_10:{icon:'💥',en:'Unstoppable',ar:'لا يُوقف'}, checkmate:{icon:'♟️',en:'Chess Master',ar:'سيد الشطرنج'},
+  trivia_king:{icon:'🧠',en:'Trivia King',ar:'ملك المعلومات'}, speed_demon:{icon:'⚡',en:'Speed Demon',ar:'شيطان السرعة'},
+  champion:{icon:'👑',en:'Champion',ar:'البطل'}, legend:{icon:'🏆',en:'Legend',ar:'أسطورة'},
+  jack_trades:{icon:'🃏',en:'All-Rounder',ar:'متعدد المواهب'}, veteran:{icon:'⭐',en:'Veteran',ar:'محارب قديم'},
+  social:{icon:'🦋',en:'Social Star',ar:'نجم اجتماعي'}, debater:{icon:'🎙️',en:'Debater',ar:'المناظر'},
+  word_wizard:{icon:'🔤',en:'Word Wizard',ar:'ساحر الكلمات'}, emoji_expert:{icon:'😎',en:'Emoji Expert',ar:'خبير الإيموجي'}
+};
+
+const DAILY_CHALLENGES = [
+  { type:'win_games', target:2, en:'Win 2 games', ar:'فز بلعبتين', reward:50 },
+  { type:'play_types', target:3, en:'Play 3 different game types', ar:'العب ٣ أنواع ألعاب مختلفة', reward:50 },
+  { type:'play_games', target:5, en:'Play 5 games', ar:'العب ٥ ألعاب', reward:50 },
+  { type:'win_streak', target:2, en:'Win 2 games in a row', ar:'فز بلعبتين متتاليتين', reward:50 },
+  { type:'trivia_7', target:7, en:'Score 7+ in Trivia', ar:'سجل ٧+ في المعلومات', reward:50 },
+  { type:'chess_win', target:1, en:'Win a chess game', ar:'فز بلعبة شطرنج', reward:50 },
+  { type:'math_8', target:8, en:'Score 8+ in Fast Math', ar:'سجل ٨+ في الحساب السريع', reward:50 }
+];
+
+function getDailyChallenge() {
+  const today = new Date().toISOString().split('T')[0];
+  const seed = today.split('-').reduce((a,b) => a + parseInt(b), 0);
+  return { ...DAILY_CHALLENGES[seed % DAILY_CHALLENGES.length], date: today };
+}
 
 function addXP(playerName, amount) {
   const p = ensureProfile(playerName);
@@ -883,7 +1196,7 @@ io.on('connection', (socket) => {
     const room = {
       code: generateCode(),
       admin: socket.id,
-      players: new Map([[socket.id, { id: socket.id, name, score: 0, gamesPlayed: 0, wins: 0, avatar: ensureProfile(name).avatar, level: calculateLevel(ensureProfile(name).xp) }]]),
+      players: new Map([[socket.id, { id: socket.id, name, score: 0, gamesPlayed: 0, wins: 0, avatar: ensureProfile(name).avatar, level: calculateLevel(ensureProfile(name).xp), selectedTitle: ensureProfile(name).selectedTitle }]]),
       currentGame: null,
       gameState: null,
       debate: null,
@@ -907,7 +1220,7 @@ io.on('connection', (socket) => {
     if (room.players.size >= 20) return cb({ error: 'Room is full' });
     const name = playerName.trim().slice(0, 20);
     const profile = ensureProfile(name);
-    room.players.set(socket.id, { id: socket.id, name, score: 0, gamesPlayed: 0, wins: 0, avatar: profile.avatar, level: calculateLevel(profile.xp) });
+    room.players.set(socket.id, { id: socket.id, name, score: 0, gamesPlayed: 0, wins: 0, avatar: profile.avatar, level: calculateLevel(profile.xp), selectedTitle: profile.selectedTitle });
     socketToRoom.set(socket.id, code);
     socket.join(code);
     io.to(code).emit('room-update', getRoomData(room));
@@ -917,6 +1230,37 @@ io.on('connection', (socket) => {
 
   socket.on('leave-room', () => {
     handleLeave(socket);
+  });
+
+  // ─── Rejoin after reconnect ───
+  socket.on('rejoin-room', ({ roomCode, playerName }, cb) => {
+    if (!roomCode || !playerName) return cb && cb({ error: 'Missing data' });
+    const code = roomCode.toUpperCase().trim();
+    const room = rooms.get(code);
+    if (!room) return cb && cb({ error: 'Room not found' });
+    // Find existing player by name
+    let existingId = null;
+    for (const [id, p] of room.players) {
+      if (p.name === playerName && !isBot(id)) { existingId = id; break; }
+    }
+    if (existingId) {
+      // Transfer player to new socket
+      const playerData = room.players.get(existingId);
+      room.players.delete(existingId);
+      socketToRoom.delete(existingId);
+      playerData.id = socket.id;
+      room.players.set(socket.id, playerData);
+      if (room.admin === existingId) room.admin = socket.id;
+    } else {
+      // New join
+      const profile = ensureProfile(playerName);
+      room.players.set(socket.id, { id: socket.id, name: playerName, score: 0, gamesPlayed: 0, wins: 0, avatar: profile.avatar, level: calculateLevel(profile.xp), selectedTitle: profile.selectedTitle });
+    }
+    socketToRoom.set(socket.id, code);
+    socket.join(code);
+    const isAdm = room.admin === socket.id;
+    cb && cb({ success: true, room: getRoomData(room), playerId: socket.id, isAdmin: isAdm });
+    io.to(code).emit('room-update', getRoomData(room));
   });
 
   socket.on('chat-message', ({ message }) => {
@@ -972,6 +1316,20 @@ io.on('connection', (socket) => {
     }
 
     const state = engine.create(gamePlayers);
+
+    // Apply custom settings
+    if (options) {
+      if (options.timer && typeof options.timer === 'number' && state.timer !== undefined) state.timer = Math.max(5, Math.min(120, options.timer));
+      if (options.rounds && typeof options.rounds === 'number') {
+        const r = Math.max(1, Math.min(20, options.rounds));
+        if (gameType === 'rps') state.maxRounds = r;
+        if (state.questions) state.questions = state.questions.slice(0, r);
+        if (state.words) state.words = state.words.slice(0, r);
+        if (state.puzzles) state.puzzles = state.puzzles.slice(0, r);
+        if (state.problems) { state.problems = state.problems.slice(0, r); state.totalProblems = r; }
+      }
+    }
+
     room.currentGame = gameType;
     room.gameState = state;
 
@@ -989,6 +1347,9 @@ io.on('connection', (socket) => {
         handleGameTimeout(code, gameType);
       });
     }
+
+    // Schedule bot moves after game starts
+    scheduleBotMoves(code, gameType);
   });
 
   socket.on('game-move', ({ move }) => {
@@ -1009,8 +1370,7 @@ io.on('connection', (socket) => {
     if (result) {
       endGame(code, room, result);
     } else if (room.gameState.phase === 'reveal' && ['trivia'].includes(room.currentGame)) {
-      // For trivia, wait then move to next question
-      clearGameTimer(code);
+      clearGameTimer(code); clearBotTimers(code);
       setTimeout(() => {
         if (!room.currentGame) return;
         engine.nextQuestion(room.gameState);
@@ -1018,9 +1378,10 @@ io.on('connection', (socket) => {
         if (endCheck) { endGame(code, room, endCheck); return; }
         io.to(code).emit('game-update', { state: sanitizeState(room.currentGame, room.gameState) });
         startGameTimer(code, room.gameState.timer, () => handleGameTimeout(code, room.currentGame));
+        scheduleBotMoves(code, room.currentGame);
       }, 3000);
     } else if (room.gameState.solved && ['wordscramble', 'emojiguess', 'hangman', 'fastmath'].includes(room.currentGame)) {
-      clearGameTimer(code);
+      clearGameTimer(code); clearBotTimers(code);
       setTimeout(() => {
         if (!room.currentGame) return;
         if (engine.nextPuzzle) engine.nextPuzzle(room.gameState);
@@ -1030,9 +1391,10 @@ io.on('connection', (socket) => {
         if (endCheck) { endGame(code, room, endCheck); return; }
         io.to(code).emit('game-update', { state: sanitizeState(room.currentGame, room.gameState) });
         startGameTimer(code, room.gameState.timer, () => handleGameTimeout(code, room.currentGame));
+        scheduleBotMoves(code, room.currentGame);
       }, 2500);
     } else if (room.gameState.failed && room.currentGame === 'hangman') {
-      clearGameTimer(code);
+      clearGameTimer(code); clearBotTimers(code);
       setTimeout(() => {
         if (!room.currentGame) return;
         engine.nextWord(room.gameState);
@@ -1040,7 +1402,11 @@ io.on('connection', (socket) => {
         if (endCheck) { endGame(code, room, endCheck); return; }
         io.to(code).emit('game-update', { state: sanitizeState(room.currentGame, room.gameState) });
         startGameTimer(code, room.gameState.timer, () => handleGameTimeout(code, room.currentGame));
+        scheduleBotMoves(code, room.currentGame);
       }, 3000);
+    } else {
+      // For turn-based games (tictactoe, connect4, chess) — schedule bot after human move
+      scheduleBotMoves(code, room.currentGame);
     }
   });
 
@@ -1141,7 +1507,25 @@ io.on('connection', (socket) => {
 
   socket.on('get-profile', ({ name }, cb) => {
     const p = ensureProfile(name);
-    cb({ name: p.name, avatar: p.avatar, xp: p.xp || 0, level: calculateLevel(p.xp), achievements: p.achievements || [], streak: p.streak || 0, maxStreak: p.maxStreak || 0, totalPoints: p.totalPoints, gamesPlayed: p.gamesPlayed, wins: p.wins, losses: p.losses, draws: p.draws, gameStats: p.gameStats });
+    let favoriteGame = null, maxPlayed = 0;
+    for (const [game, stats] of Object.entries(p.gameStats || {})) { if (stats.played > maxPlayed) { maxPlayed = stats.played; favoriteGame = game; } }
+    const winRate = p.gamesPlayed > 0 ? Math.round((p.wins / p.gamesPlayed) * 100) : 0;
+    cb({ name: p.name, avatar: p.avatar, xp: p.xp || 0, level: calculateLevel(p.xp), achievements: p.achievements || [], streak: p.streak || 0, maxStreak: p.maxStreak || 0, totalPoints: p.totalPoints, gamesPlayed: p.gamesPlayed, wins: p.wins, losses: p.losses, draws: p.draws, gameStats: p.gameStats, selectedTitle: p.selectedTitle, favoriteGame, winRate, dailyChallenge: p.dailyChallenge });
+  });
+
+  socket.on('select-title', ({ titleId }, cb) => {
+    const code = socketToRoom.get(socket.id);
+    const room = code && rooms.get(code);
+    if (!room) return cb && cb({ error: 'Not in room' });
+    const player = room.players.get(socket.id);
+    if (!player) return;
+    const p = ensureProfile(player.name);
+    if (titleId !== null && !p.achievements.includes(titleId)) return cb && cb({ error: 'Not earned' });
+    p.selectedTitle = titleId;
+    player.selectedTitle = titleId;
+    saveLeaderboard(leaderboard);
+    io.to(code).emit('room-update', getRoomData(room));
+    if (cb) cb({ success: true });
   });
 
   // ─── Admin: Kick Player ───
@@ -1163,15 +1547,36 @@ io.on('connection', (socket) => {
     io.to(code).emit('room-update', getRoomData(room));
   });
 
-  // ─── Rematch ───
-  socket.on('request-rematch', ({ gameType }) => {
+  // ─── Bots ───
+  socket.on('add-bot', ({ difficulty }) => {
     const code = socketToRoom.get(socket.id);
     const room = code && rooms.get(code);
     if (!room || room.admin !== socket.id) return;
-    const engine = gameEngines[gameType];
-    if (!engine) return;
-    socket.emit('start-game', { gameType });
+    const diff = ['easy','medium','hard'].includes(difficulty) ? difficulty : 'medium';
+    const bot = addBotToRoom(room, diff);
+    if (!bot) return socket.emit('error-msg', { message: 'Room is full' });
+    io.to(code).emit('room-update', getRoomData(room));
+    io.to(code).emit('player-joined', { id: bot.id, name: bot.name, avatar: '🤖', level: 0, isBot: true });
   });
+
+  socket.on('remove-bot', ({ botId }) => {
+    const code = socketToRoom.get(socket.id);
+    const room = code && rooms.get(code);
+    if (!room || room.admin !== socket.id || !isBot(botId)) return;
+    removeBotFromRoom(room, botId);
+    io.to(code).emit('player-left', { playerId: botId });
+    io.to(code).emit('room-update', getRoomData(room));
+  });
+
+  socket.on('remove-all-bots', () => {
+    const code = socketToRoom.get(socket.id);
+    const room = code && rooms.get(code);
+    if (!room || room.admin !== socket.id) return;
+    removeAllBotsFromRoom(room);
+    io.to(code).emit('room-update', getRoomData(room));
+  });
+
+  // (rematch is handled client-side via start-game)
 
   // ─── Voting ───
   socket.on('create-vote', () => {
@@ -1290,7 +1695,10 @@ function handleLeave(socket) {
   socketToRoom.delete(socket.id);
   socket.leave(code);
 
-  if (room.players.size === 0) {
+  // If only bots remain, destroy room
+  const hasHumans = Array.from(room.players.keys()).some(id => !isBot(id));
+  if (room.players.size === 0 || !hasHumans) {
+    clearBotTimers(code);
     rooms.delete(code);
     clearGameTimer(code);
     if (debateTimers.has(code)) { clearInterval(debateTimers.get(code)); debateTimers.delete(code); }
@@ -1298,7 +1706,10 @@ function handleLeave(socket) {
   }
 
   if (room.admin === socket.id) {
-    room.admin = room.players.keys().next().value;
+    // Pick non-bot admin
+    let newAdmin = null;
+    for (const [id] of room.players) { if (!isBot(id)) { newAdmin = id; break; } }
+    room.admin = newAdmin || room.players.keys().next().value;
     io.to(code).emit('new-admin', { adminId: room.admin });
   }
 
@@ -1308,6 +1719,7 @@ function handleLeave(socket) {
 
 function endGame(code, room, result) {
   clearGameTimer(code);
+  clearBotTimers(code);
   const playerNames = {};
   for (const [id, p] of room.players) playerNames[id] = p.name;
 
@@ -1347,7 +1759,7 @@ function endGame(code, room, result) {
   const gameType = room.currentGame;
   if (result.winner) {
     const wName = playerNames[result.winner];
-    if (wName) {
+    if (wName && !isBot(result.winner)) {
       addXP(wName, 30);
       const p = ensureProfile(wName);
       p.streak = (p.streak || 0) + 1;
@@ -1360,7 +1772,7 @@ function endGame(code, room, result) {
       });
     }
     for (const [id, p] of room.players) {
-      if (id !== result.winner && room.gameState.players.includes(id)) {
+      if (id !== result.winner && room.gameState.players.includes(id) && !isBot(id)) {
         addXP(p.name, 5);
         const prof = ensureProfile(p.name);
         prof.streak = 0;
@@ -1372,6 +1784,40 @@ function endGame(code, room, result) {
       if (room.gameState.players.includes(id)) {
         addXP(p.name, 10);
       }
+    }
+  }
+
+  // Daily challenge progress
+  const dc = getDailyChallenge();
+  for (const [id, p] of room.players) {
+    if (isBot(id) || !room.gameState.players.includes(id)) continue;
+    const prof = ensureProfile(p.name);
+    const pdc = prof.dailyChallenge;
+    if (!pdc || pdc.completed) continue;
+    if (dc.type === 'win_games' && id === result.winner) pdc.progress++;
+    else if (dc.type === 'play_games') pdc.progress++;
+    else if (dc.type === 'play_types') {
+      if (!pdc.typesPlayed) pdc.typesPlayed = [];
+      if (!pdc.typesPlayed.includes(gameType)) { pdc.typesPlayed.push(gameType); pdc.progress = pdc.typesPlayed.length; }
+    }
+    else if (dc.type === 'win_streak' && id === result.winner) pdc.progress = Math.max(pdc.progress, prof.streak);
+    else if (dc.type === 'trivia_7' && gameType === 'trivia' && result.scores && (result.scores[id] || 0) >= 7) pdc.progress = 7;
+    else if (dc.type === 'chess_win' && gameType === 'chess' && id === result.winner) pdc.progress++;
+    else if (dc.type === 'math_8' && gameType === 'fastmath' && result.scores && (result.scores[id] || 0) >= 8) pdc.progress = 8;
+    if (pdc.progress >= dc.target && !pdc.completed) {
+      pdc.completed = true;
+      addXP(p.name, dc.reward);
+      io.to(id).emit('daily-challenge-complete', { reward: dc.reward });
+    }
+    saveLeaderboard(leaderboard);
+  }
+
+  // Enriched podium data
+  const podiumPlayers = {};
+  for (const [id, p] of room.players) {
+    if (room.gameState.players.includes(id)) {
+      const prof = isBot(id) ? null : ensureProfile(p.name);
+      podiumPlayers[id] = { name: p.name, avatar: p.avatar || (isBot(id) ? '🤖' : '😎'), level: p.level || 0, isBot: isBot(id), selectedTitle: prof ? prof.selectedTitle : null };
     }
   }
 
@@ -1428,6 +1874,8 @@ function endGame(code, room, result) {
     scores: result.scores || null,
     line: result.line || null,
     playerNames,
+    podiumPlayers,
+    gameType,
     tournament: !!tournamentData
   });
 
@@ -1585,6 +2033,14 @@ app.get('/api/player/:name', (req, res) => {
 
 app.get('/api/achievements', (req, res) => {
   res.json(ACHIEVEMENTS);
+});
+
+app.get('/api/daily-challenge', (req, res) => {
+  res.json(getDailyChallenge());
+});
+
+app.get('/api/titles', (req, res) => {
+  res.json(TITLE_MAP);
 });
 
 app.get('/api/rooms', (req, res) => {

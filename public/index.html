@@ -1,150 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SpaceGames - Level Up Your X Spaces</title>
+  <title>ساحة الألعاب - SpaceGames</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
-  <!-- ═══ NAVIGATION ═══ -->
   <nav id="main-nav">
     <div class="nav-brand" onclick="SpaceGames.navigate('home')">
       <span class="brand-icon">🎮</span>
       <span class="brand-text">SpaceGames</span>
     </div>
     <div class="nav-links">
-      <a onclick="SpaceGames.navigate('home')" class="nav-link active" data-page="home">Home</a>
-      <a onclick="SpaceGames.navigate('leaderboard')" class="nav-link" data-page="leaderboard">Leaderboard</a>
+      <a onclick="SpaceGames.navigate('home')" class="nav-link active" data-page="home" data-i18n="nav_home">الرئيسية</a>
+      <a onclick="SpaceGames.navigate('leaderboard')" class="nav-link" data-page="leaderboard" data-i18n="nav_leaderboard">المتصدرين</a>
     </div>
     <div class="nav-right">
-      <button id="sound-toggle" onclick="SpaceGames.toggleSound()" class="btn btn-sm btn-ghost" title="Toggle sound">🔊</button>
+      <button onclick="SpaceGames.showThemePicker()" class="btn btn-sm btn-ghost" title="Theme">🎨</button>
+      <button onclick="SpaceGames.showTitlePicker()" class="btn btn-sm btn-ghost" title="Title" id="btn-title" style="display:none">🏷️</button>
+      <button id="lang-toggle" onclick="SpaceGames.toggleLang()" class="btn btn-sm btn-ghost lang-btn" title="Switch language">EN</button>
+      <button id="sound-toggle" onclick="SpaceGames.toggleSound()" class="btn btn-sm btn-ghost">🔊</button>
       <div class="nav-user" id="nav-user" style="display:none">
-        <span id="nav-avatar" class="nav-avatar" onclick="SpaceGames.showAvatarPicker()" title="Change avatar"></span>
+        <span id="nav-avatar" class="nav-avatar" onclick="SpaceGames.showAvatarPicker()"></span>
         <span id="nav-player-name"></span>
         <span id="nav-level" class="level-badge"></span>
         <span id="nav-room-code" class="room-badge"></span>
-        <button onclick="SpaceGames.leaveRoom()" class="btn btn-sm btn-danger">Leave</button>
+        <button onclick="SpaceGames.leaveRoom()" class="btn btn-sm btn-danger" data-i18n="nav_leave">مغادرة</button>
       </div>
     </div>
   </nav>
 
-  <!-- ═══ TOAST CONTAINER ═══ -->
-  <div id="toast-container"></div>
+  <!-- Reconnection Banner -->
+  <div id="reconnect-banner" class="reconnect-banner" style="display:none">
+    <span class="reconnect-spinner"></span>
+    <span data-i18n="reconnecting">جارٍ إعادة الاتصال...</span>
+  </div>
 
-  <!-- ═══ REACTION BUBBLES ═══ -->
+  <!-- Welcome Overlay (first visit) -->
+  <div id="welcome-overlay" class="welcome-overlay" style="display:none"></div>
+
+  <div id="toast-container"></div>
   <div id="reaction-container"></div>
 
-  <!-- ═══ MAIN APP ═══ -->
   <main id="app">
-
-    <!-- ─── HOME PAGE ─── -->
+    <!-- HOME -->
     <section id="page-home" class="page active">
       <div class="hero">
-        <h1 class="hero-title">
-          <span class="gradient-text">SpaceGames</span>
-        </h1>
-        <p class="hero-subtitle">The ultimate games & tools platform for X Spaces</p>
-        <p class="hero-desc">Play games, host debates, track scores — all in real-time with your Space audience</p>
+        <h1 class="hero-title"><span class="gradient-text" data-i18n="hero_title">ساحة الألعاب</span></h1>
+        <p class="hero-subtitle" data-i18n="hero_subtitle">منصة الألعاب والأدوات لمساحات X</p>
+        <p class="hero-desc" data-i18n="hero_desc">العب، نافس، وتابع النتائج — الكل في الوقت الحقيقي مع جمهور مساحتك</p>
         <div class="hero-actions">
-          <button onclick="SpaceGames.showCreateRoom()" class="btn btn-primary btn-lg">
-            <span>🚀</span> Create Room
-          </button>
-          <button onclick="SpaceGames.showJoinRoom()" class="btn btn-secondary btn-lg">
-            <span>🔗</span> Join Room
-          </button>
+          <button onclick="SpaceGames.showQuickPlay()" class="btn btn-accent btn-xl quick-play-hero"><span>🎮</span> <span data-i18n="quick_play">العب الآن</span></button>
+          <div style="display:flex;gap:12px;width:100%;justify-content:center;flex-wrap:wrap;">
+            <button onclick="SpaceGames.showCreateRoom()" class="btn btn-primary btn-lg"><span>🚀</span> <span data-i18n="btn_create_room">إنشاء غرفة</span></button>
+            <button onclick="SpaceGames.showJoinRoom()" class="btn btn-secondary btn-lg"><span>🔗</span> <span data-i18n="btn_join_room">انضمام لغرفة</span></button>
+          </div>
         </div>
       </div>
-
+      <div id="daily-challenge-card" class="daily-challenge-card" style="display:none"></div>
       <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🎯</div>
-          <h3>7 Fun Games</h3>
-          <p>XO, Connect 4, Chess, RPS, Trivia, Word Scramble, Emoji Guess</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">⏱️</div>
-          <h3>Debate Timer</h3>
-          <p>Structured discussions with fair time allocation and live dashboard</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🏆</div>
-          <h3>Leaderboard</h3>
-          <p>Track scores per game and globally — compete to be #1</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">👥</div>
-          <h3>Real-Time</h3>
-          <p>Instant sync for all players — perfect for live X Spaces</p>
-        </div>
+        <div class="feature-card"><div class="feature-icon">🎯</div><h3 data-i18n="feat_games">٩ ألعاب ممتعة</h3><p data-i18n="feat_games_d">إكس أو، صل ٤، شطرنج، حجر ورقة مقص، معلومات، كلمات، إيموجي، مشنوق، حساب</p></div>
+        <div class="feature-card"><div class="feature-icon">⏱️</div><h3 data-i18n="feat_debate">مؤقت النقاش</h3><p data-i18n="feat_debate_d">نقاشات منظمة مع توزيع عادل للوقت ولوحة متابعة مباشرة</p></div>
+        <div class="feature-card"><div class="feature-icon">🏆</div><h3 data-i18n="feat_lb">لوحة المتصدرين</h3><p data-i18n="feat_lb_d">تتبع النتائج لكل لعبة وعالمياً — نافس لتكون رقم ١</p></div>
+        <div class="feature-card"><div class="feature-icon">👥</div><h3 data-i18n="feat_rt">وقت حقيقي</h3><p data-i18n="feat_rt_d">تزامن فوري لجميع اللاعبين — مثالي لمساحات X المباشرة</p></div>
       </div>
-
       <div class="games-preview">
-        <h2 class="section-title">Available Games</h2>
+        <h2 class="section-title" data-i18n="available_games">الألعاب المتاحة</h2>
         <div class="games-grid" id="home-games-grid"></div>
       </div>
     </section>
 
-    <!-- ─── ROOM PAGE ─── -->
+    <!-- ROOM -->
     <section id="page-room" class="page">
       <div class="room-layout">
-        <!-- Room Header -->
         <div class="room-header">
           <div class="room-header-left">
-            <h2 id="room-title">Room</h2>
+            <h2 id="room-title" data-i18n="room_title">الغرفة</h2>
             <div class="room-code-display">
-              <span>Room Code:</span>
+              <span data-i18n="room_code_label">رمز الغرفة:</span>
               <span id="room-code-big" class="room-code-value"></span>
-              <button onclick="SpaceGames.copyRoomCode()" class="btn btn-sm btn-ghost" title="Copy code">📋</button>
+              <button onclick="SpaceGames.copyRoomCode()" class="btn btn-sm btn-ghost">📋</button>
             </div>
           </div>
-          <div class="room-header-right">
-            <span id="room-player-count" class="player-count"></span>
-          </div>
+          <div class="room-header-right"><span id="room-player-count" class="player-count"></span></div>
         </div>
-
         <div class="room-body">
-          <!-- Left: Players & Games -->
           <div class="room-main">
-            <!-- Players -->
-            <div class="card">
-              <h3 class="card-title">👥 Players</h3>
-              <div id="room-players" class="player-list"></div>
-            </div>
-
-            <!-- Games (admin only) -->
-            <div class="card" id="room-games-section">
-              <h3 class="card-title">🎮 Start a Game</h3>
-              <div id="room-games-grid" class="mini-games-grid"></div>
-            </div>
-
-            <!-- Voting & Tournament (admin) -->
+            <div class="card"><h3 class="card-title" data-i18n="room_players">👥 اللاعبون</h3><div id="room-players" class="player-list"></div></div>
+            <div class="card" id="room-games-section"><h3 class="card-title" data-i18n="room_start_game">🎮 ابدأ لعبة</h3><div id="room-games-grid" class="mini-games-grid"></div></div>
+            <div class="card" id="room-bot-section" style="display:none"><h3 class="card-title">🤖 <span data-i18n="btn_add_bot">إضافة بوت</span></h3><div id="bot-controls"></div></div>
             <div class="card" id="room-special-section">
-              <h3 class="card-title">🏟️ Events</h3>
+              <h3 class="card-title" data-i18n="room_events">🏟️ الفعاليات</h3>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <button onclick="SpaceGames.createVote()" class="btn btn-secondary btn-sm" id="btn-create-vote">📊 Start Vote</button>
-                <button onclick="SpaceGames.showTournamentSetup()" class="btn btn-secondary btn-sm" id="btn-start-tournament">🏆 Tournament</button>
+                <button onclick="SpaceGames.createVote()" class="btn btn-secondary btn-sm" id="btn-create-vote"><span>📊</span> <span data-i18n="btn_vote">بدء تصويت</span></button>
+                <button onclick="SpaceGames.showTournamentSetup()" class="btn btn-secondary btn-sm" id="btn-start-tournament"><span>🏆</span> <span data-i18n="btn_tournament">بطولة</span></button>
               </div>
               <div id="vote-display" style="margin-top:12px;"></div>
               <div id="tournament-display" style="margin-top:12px;"></div>
             </div>
-
-            <!-- Debate (admin only) -->
-            <div class="card" id="room-debate-section">
-              <h3 class="card-title">⏱️ Debate Timer</h3>
-              <div id="debate-controls"></div>
-            </div>
+            <div class="card" id="room-debate-section"><h3 class="card-title" data-i18n="room_debate">⏱️ مؤقت النقاش</h3><div id="debate-controls"></div></div>
           </div>
-
-          <!-- Right: Chat -->
           <div class="room-sidebar">
             <div class="card chat-card">
-              <h3 class="card-title">💬 Chat</h3>
+              <h3 class="card-title" data-i18n="room_chat">💬 الدردشة</h3>
               <div id="chat-messages" class="chat-messages"></div>
               <div class="chat-input-row">
-                <input type="text" id="chat-input" placeholder="Type a message..." maxlength="200" onkeydown="if(event.key==='Enter')SpaceGames.sendChat()">
-                <button onclick="SpaceGames.sendChat()" class="btn btn-primary btn-sm">Send</button>
+                <input type="text" id="chat-input" data-i18n-placeholder="chat_placeholder" placeholder="اكتب رسالة..." maxlength="200" onkeydown="if(event.key==='Enter')SpaceGames.sendChat()">
+                <button onclick="SpaceGames.sendChat()" class="btn btn-primary btn-sm" data-i18n="btn_send">إرسال</button>
               </div>
               <div class="reaction-bar">
                 <button onclick="SpaceGames.sendReaction('🔥')" class="reaction-btn">🔥</button>
@@ -162,31 +132,26 @@
       </div>
     </section>
 
-    <!-- ─── GAME PAGE ─── -->
+    <!-- GAME -->
     <section id="page-game" class="page">
       <div class="game-layout">
         <div class="game-header-bar">
-          <button onclick="SpaceGames.backToRoom()" class="btn btn-ghost btn-sm">← Back to Room</button>
+          <button onclick="SpaceGames.backToRoom()" class="btn btn-ghost btn-sm" data-i18n="btn_back">→ العودة للغرفة</button>
           <div id="game-title" class="game-title-text"></div>
-          <div id="game-timer-display" class="game-timer" style="display:none">
-            <span class="timer-icon">⏱️</span>
-            <span id="game-timer-value">0</span>s
-          </div>
-          <button onclick="SpaceGames.endCurrentGame()" class="btn btn-danger btn-sm" id="btn-end-game" style="display:none">End Game</button>
+          <div id="game-timer-display" class="game-timer" style="display:none"><span class="timer-icon">⏱️</span> <span id="game-timer-value">0</span>s</div>
+          <button onclick="SpaceGames.endCurrentGame()" class="btn btn-danger btn-sm" id="btn-end-game" style="display:none" data-i18n="btn_end_game">إنهاء اللعبة</button>
         </div>
         <div id="game-container" class="game-container"></div>
-        <div id="game-spectator-bar" class="spectator-bar" style="display:none">
-          <span>👁️ You are spectating</span>
-        </div>
+        <div id="game-spectator-bar" class="spectator-bar" style="display:none"><span data-i18n="game_spectating">👁️ أنت تشاهد</span></div>
       </div>
     </section>
 
-    <!-- ─── DEBATE PAGE ─── -->
+    <!-- DEBATE -->
     <section id="page-debate" class="page">
       <div class="debate-layout">
         <div class="debate-header">
-          <button onclick="SpaceGames.backToRoom()" class="btn btn-ghost btn-sm">← Back to Room</button>
-          <h2 id="debate-topic">Debate</h2>
+          <button onclick="SpaceGames.backToRoom()" class="btn btn-ghost btn-sm" data-i18n="btn_back">→ العودة للغرفة</button>
+          <h2 id="debate-topic"></h2>
         </div>
         <div class="debate-body">
           <div class="debate-main">
@@ -194,74 +159,44 @@
             <div id="debate-dashboard" class="debate-dashboard"></div>
           </div>
           <div class="debate-sidebar">
-            <div class="card" id="debate-admin-controls" style="display:none">
-              <h3 class="card-title">🎛️ Controls</h3>
-              <div id="debate-admin-panel"></div>
-            </div>
-            <div class="card">
-              <h3 class="card-title">📊 Statistics</h3>
-              <div id="debate-stats"></div>
-            </div>
+            <div class="card" id="debate-admin-controls" style="display:none"><h3 class="card-title" data-i18n="debate_controls">🎛️ لوحة التحكم</h3><div id="debate-admin-panel"></div></div>
+            <div class="card"><h3 class="card-title" data-i18n="debate_stats">📊 الإحصائيات</h3><div id="debate-stats"></div></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ─── LEADERBOARD PAGE ─── -->
+    <!-- LEADERBOARD -->
     <section id="page-leaderboard" class="page">
       <div class="leaderboard-layout">
-        <h2 class="section-title">🏆 Global Leaderboard</h2>
-        <div class="leaderboard-filters">
-          <button onclick="SpaceGames.loadLeaderboard('all')" class="btn btn-sm filter-btn active" data-filter="all">All Games</button>
-          <button onclick="SpaceGames.loadLeaderboard('tictactoe')" class="btn btn-sm filter-btn" data-filter="tictactoe">Tic Tac Toe</button>
-          <button onclick="SpaceGames.loadLeaderboard('connect4')" class="btn btn-sm filter-btn" data-filter="connect4">Connect 4</button>
-          <button onclick="SpaceGames.loadLeaderboard('chess')" class="btn btn-sm filter-btn" data-filter="chess">Chess</button>
-          <button onclick="SpaceGames.loadLeaderboard('rps')" class="btn btn-sm filter-btn" data-filter="rps">RPS</button>
-          <button onclick="SpaceGames.loadLeaderboard('trivia')" class="btn btn-sm filter-btn" data-filter="trivia">Trivia</button>
-          <button onclick="SpaceGames.loadLeaderboard('wordscramble')" class="btn btn-sm filter-btn" data-filter="wordscramble">Word Scramble</button>
-          <button onclick="SpaceGames.loadLeaderboard('emojiguess')" class="btn btn-sm filter-btn" data-filter="emojiguess">Emoji Guess</button>
-          <button onclick="SpaceGames.loadLeaderboard('hangman')" class="btn btn-sm filter-btn" data-filter="hangman">Hangman</button>
-          <button onclick="SpaceGames.loadLeaderboard('fastmath')" class="btn btn-sm filter-btn" data-filter="fastmath">Fast Math</button>
-        </div>
-        <div id="leaderboard-content" class="leaderboard-content">
-          <div class="empty-state">Loading...</div>
-        </div>
+        <h2 class="section-title" data-i18n="lb_title">🏆 لوحة المتصدرين العالمية</h2>
+        <div class="leaderboard-filters" id="leaderboard-filters"></div>
+        <div id="leaderboard-content" class="leaderboard-content"><div class="empty-state">...</div></div>
       </div>
     </section>
   </main>
 
-  <!-- ═══ MODAL ═══ -->
   <div id="modal-overlay" class="modal-overlay" onclick="SpaceGames.closeModal(event)">
     <div class="modal" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h3 id="modal-title"></h3>
-        <button onclick="SpaceGames.closeModal()" class="modal-close">&times;</button>
-      </div>
+      <div class="modal-header"><h3 id="modal-title"></h3><button onclick="SpaceGames.closeModal()" class="modal-close">&times;</button></div>
       <div id="modal-body" class="modal-body"></div>
     </div>
   </div>
 
-  <!-- ═══ GAME OVER OVERLAY ═══ -->
   <div id="game-over-overlay" class="game-over-overlay" style="display:none">
     <div class="game-over-content">
-      <div id="game-over-icon" class="game-over-icon"></div>
-      <h2 id="game-over-title"></h2>
-      <p id="game-over-detail"></p>
-      <div id="game-over-scores"></div>
-      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-        <button onclick="SpaceGames.requestRematch()" class="btn btn-accent btn-lg" id="btn-rematch" style="display:none">🔄 Rematch</button>
-        <button onclick="SpaceGames.dismissGameOver()" class="btn btn-primary btn-lg">Continue</button>
+      <div id="podium-container"></div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px;">
+        <button onclick="SpaceGames.requestRematch()" class="btn btn-accent btn-lg" id="btn-rematch" style="display:none">🔄 <span data-i18n="btn_rematch">إعادة المباراة</span></button>
+        <button onclick="SpaceGames.shareToX()" class="btn btn-secondary btn-lg" id="btn-share-x" style="display:none">🐦 <span data-i18n="btn_share">شارك على X</span></button>
+        <button onclick="SpaceGames.dismissGameOver()" class="btn btn-primary btn-lg" data-i18n="btn_continue">متابعة</button>
       </div>
     </div>
   </div>
 
-  <!-- ═══ CONFETTI CANVAS ═══ -->
   <canvas id="confetti-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:9999;"></canvas>
-
-  <!-- ═══ ACHIEVEMENT TOAST ═══ -->
   <div id="achievement-container" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:8000;pointer-events:none;"></div>
 
-  <!-- ═══ SCRIPTS ═══ -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/games/tictactoe.js"></script>

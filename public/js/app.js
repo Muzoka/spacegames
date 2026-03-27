@@ -3,6 +3,217 @@
    ═══════════════════════════════════════ */
 
 window.SpaceGames = (() => {
+  // ═══ INTERNATIONALIZATION ═══
+  const LANGS = {
+    ar: {
+      nav_home:'الرئيسية', nav_leaderboard:'المتصدرين', nav_leave:'مغادرة',
+      hero_title:'ساحة الألعاب', hero_subtitle:'منصة الألعاب والأدوات لمساحات X',
+      hero_desc:'العب، نافس، وتابع النتائج — الكل في الوقت الحقيقي مع جمهور مساحتك',
+      btn_create_room:'إنشاء غرفة', btn_join_room:'انضمام لغرفة', btn_send:'إرسال', btn_submit:'تأكيد',
+      btn_continue:'متابعة', btn_rematch:'إعادة المباراة', btn_back:'→ العودة للغرفة',
+      btn_end_game:'إنهاء اللعبة', btn_vote:'بدء تصويت', btn_tournament:'بطولة',
+      chat_placeholder:'اكتب رسالة...', room_title:'الغرفة', room_code_label:'رمز الغرفة:',
+      room_players:'👥 اللاعبون', room_start_game:'🎮 ابدأ لعبة', room_events:'🏟️ الفعاليات',
+      room_debate:'⏱️ مؤقت النقاش', room_chat:'💬 الدردشة',
+      room_link_copied:'تم نسخ رابط الغرفة!', room_code_copied:'تم نسخ رمز الغرفة!',
+      feat_games:'٩ ألعاب ممتعة', feat_games_d:'إكس أو، صل ٤، شطرنج، حجر ورقة مقص، معلومات، كلمات، إيموجي، مشنوق، حساب',
+      feat_debate:'مؤقت النقاش', feat_debate_d:'نقاشات منظمة مع توزيع عادل للوقت ولوحة متابعة مباشرة',
+      feat_lb:'لوحة المتصدرين', feat_lb_d:'تتبع النتائج لكل لعبة وعالمياً — نافس لتكون رقم ١',
+      feat_rt:'وقت حقيقي', feat_rt_d:'تزامن فوري لجميع اللاعبين — مثالي لمساحات X المباشرة',
+      available_games:'الألعاب المتاحة',
+      g_tictactoe:'إكس أو', g_connect4:'صل أربعة', g_chess:'شطرنج', g_rps:'حجر ورقة مقص',
+      g_trivia:'تحدي المعلومات', g_wordscramble:'كلمات مبعثرة', g_emojiguess:'تخمين الإيموجي',
+      g_hangman:'الرجل المشنوق', g_fastmath:'حساب سريع',
+      gd_tictactoe:'لعبة الشبكة ٣×٣', gd_connect4:'صل ٤ في صف', gd_chess:'ملك الألعاب',
+      gd_rps:'أفضل من ٥ جولات', gd_trivia:'١٠ أسئلة، كن الأسرع', gd_wordscramble:'رتب الحروف',
+      gd_emojiguess:'فك شفرة الإيموجي', gd_hangman:'خمن الكلمة', gd_fastmath:'حساب بسرعة البرق',
+      cat_strategy:'استراتيجية', cat_quick:'سريعة', cat_knowledge:'معرفة', cat_word:'كلمات', cat_fun:'مرح', cat_speed:'سرعة',
+      players_label:'لاعبين', pts:'نقاط', you:'(أنت)', admin_badge:'مشرف', lvl:'مس.',
+      your_turn:'دورك!', waiting_for:'بانتظار {name}...', spectating:'👁️ أنت تشاهد',
+      round_of:'الجولة {n} من {t}', question_of:'السؤال {n} من {t}', word_of:'الكلمة {n} من {t}',
+      puzzle_of:'اللغز {n} من {t}', problem_of:'المسألة {n} من {t}',
+      solved_by:'حلها {name}!', times_up:'انتهى الوقت!', answer_was:'الجواب: {a}',
+      type_answer:'اكتب إجابتك...', type_guess:'اكتب تخمينك...',
+      you_win:'فزت! 🏆', winner_is:'فاز {name}!', its_draw:'تعادل!',
+      well_played:'أحسنت!', next_time:'حظ أوفر المرة القادمة!', plus_pts:'+٣ نقاط، +٣٠ خبرة',
+      rps_choose:'اختر سلاحك!', rps_rock:'حجر', rps_paper:'ورقة', rps_scissors:'مقص',
+      rps_you_chose:'اخترت!', rps_waiting:'بانتظار الخصم...',
+      hm_guess:'خمن حرفاً', hm_hint:'تلميح', hm_failed:'فشل! الكلمة كانت:',
+      fm_easy:'سهل', fm_medium:'متوسط', fm_hard:'صعب', fm_challenge:'تحدي',
+      debate_timer:'مؤقت النقاش', debate_topic:'الموضوع', debate_participants:'المشاركون',
+      debate_time_per:'الوقت لكل شخص (ثوانٍ)', debate_create:'إنشاء نقاش',
+      debate_speaking:'يتحدث', debate_controls:'🎛️ لوحة التحكم', debate_stats:'📊 الإحصائيات',
+      debate_give_floor:'انقر على مشارك لإعطائه الكلمة:', debate_pause:'⏸ إيقاف مؤقت',
+      debate_resume:'▶ استئناف', debate_stop:'⏹ إيقاف', debate_reset:'🔄 إعادة تعيين',
+      debate_end:'إنهاء النقاش', debate_distribution:'توزيع وقت التحدث',
+      debate_used:'مستخدم', debate_total:'إجمالي', debate_active:'نقاش نشط:',
+      debate_open:'فتح لوحة النقاش', debate_view:'عرض لوحة النقاش',
+      lb_title:'🏆 لوحة المتصدرين العالمية', lb_all:'كل الألعاب',
+      lb_rank:'الترتيب', lb_player:'اللاعب', lb_played:'لُعبت', lb_wins:'فوز', lb_wld:'ف / خ / ت', lb_points:'النقاط',
+      lb_empty:'لا توجد نتائج بعد. العب لتظهر في القائمة!', lb_error:'فشل تحميل المتصدرين',
+      modal_name:'اسمك', modal_enter_name:'أدخل اسمك', modal_room_code:'رمز الغرفة',
+      modal_name_req:'الرجاء إدخال اسمك', modal_code_req:'الرجاء إدخال رمز الغرفة',
+      vote_next:'صوّت للعبة القادمة:', vote_result:'نتيجة التصويت:', vote_started:'بدأ التصويت!',
+      tourn_title:'بدء بطولة', tourn_game:'نوع اللعبة', tourn_start:'🏆 ابدأ البطولة',
+      tourn_desc:'بطولة خروج مباشر مع جميع لاعبي الغرفة.',
+      tourn_wins:'🏆 فاز {name} بالبطولة!', tourn_r1:'الجولة ١', tourn_quarter:'ربع النهائي',
+      tourn_semi:'نصف النهائي', tourn_final:'النهائي', tourn_champion:'البطل', tourn_bye:'تأهل تلقائي',
+      profile_avatar:'اختر صورتك',
+      ach_unlocked:'إنجاز جديد!',
+      joined_room:'انضم {name} للغرفة', left_room:'غادر لاعب الغرفة',
+      now_admin:'أنت الآن مشرف الغرفة!', kicked:'تم طردك من الغرفة', player_kicked:'تم طرد اللاعب',
+      need_players:'تحتاج على الأقل {n} لاعبين',
+      btn_add_bot:'إضافة بوت', btn_remove_bots:'إزالة كل البوتات',
+      bot_easy:'بوت سهل', bot_medium:'بوت متوسط', bot_hard:'بوت صعب', bot_badge:'بوت',
+      theme_select:'اختيار المظهر', title_select:'اختيار اللقب', title_none:'بدون لقب',
+      daily_title:'التحدي اليومي', daily_reward:'المكافأة', daily_complete:'أحسنت! تم إكمال التحدي',
+      btn_share:'شارك على X', btn_start_game:'🎮 ابدأ اللعبة',
+      gs_settings:'إعدادات اللعبة', gs_timer:'المؤقت', gs_seconds:'ثوانٍ', gs_rounds:'عدد الجولات',
+      gs_select_players:'اختر اللاعبين', gs_select_2:'اختر لاعبين اثنين',
+      profile_winrate:'نسبة الفوز', profile_favgame:'اللعبة المفضلة', profile_maxstreak:'أعلى سلسلة',
+      profile_achievements:'الإنجازات', profile_none_yet:'لا يوجد بعد',
+      lang_toggle:'EN', debate_created:'تم إنشاء النقاش!',
+      quick_play:'العب الآن', quick_play_desc:'اختر لعبة وابدأ فوراً ضد بوت',
+      pick_game:'اختر لعبة', pick_difficulty:'اختر المستوى',
+      solo_play:'لعب فردي', vs_bot:'ضد البوت',
+      vs:'ضد', score:'النتيجة', win:'فوز!', lose:'خسارة!', draw:'تعادل!',
+      reconnecting:'جارٍ إعادة الاتصال...', reconnected:'تم إعادة الاتصال'
+    },
+    en: {
+      nav_home:'Home', nav_leaderboard:'Leaderboard', nav_leave:'Leave',
+      hero_title:'SpaceGames', hero_subtitle:'The ultimate games & tools platform for X Spaces',
+      hero_desc:'Play games, host debates, track scores — all in real-time with your Space audience',
+      btn_create_room:'Create Room', btn_join_room:'Join Room', btn_send:'Send', btn_submit:'Submit',
+      btn_continue:'Continue', btn_rematch:'Rematch', btn_back:'← Back to Room',
+      btn_end_game:'End Game', btn_vote:'Start Vote', btn_tournament:'Tournament',
+      chat_placeholder:'Type a message...', room_title:'Room', room_code_label:'Room Code:',
+      room_players:'👥 Players', room_start_game:'🎮 Start a Game', room_events:'🏟️ Events',
+      room_debate:'⏱️ Debate Timer', room_chat:'💬 Chat',
+      room_link_copied:'Room link copied!', room_code_copied:'Room code copied!',
+      feat_games:'9 Fun Games', feat_games_d:'XO, Connect 4, Chess, RPS, Trivia, Word Scramble, Emoji Guess, Hangman, Fast Math',
+      feat_debate:'Debate Timer', feat_debate_d:'Structured discussions with fair time allocation and live dashboard',
+      feat_lb:'Leaderboard', feat_lb_d:'Track scores per game and globally — compete to be #1',
+      feat_rt:'Real-Time', feat_rt_d:'Instant sync for all players — perfect for live X Spaces',
+      available_games:'Available Games',
+      g_tictactoe:'Tic Tac Toe', g_connect4:'Connect Four', g_chess:'Chess', g_rps:'Rock Paper Scissors',
+      g_trivia:'Trivia Battle', g_wordscramble:'Word Scramble', g_emojiguess:'Emoji Guess',
+      g_hangman:'Hangman', g_fastmath:'Fast Math',
+      gd_tictactoe:'Classic 3x3 grid', gd_connect4:'Get 4 in a row', gd_chess:'The king of games',
+      gd_rps:'Best of 5 showdown', gd_trivia:'10 questions, be fastest', gd_wordscramble:'Unscramble the word',
+      gd_emojiguess:'Decode the emojis', gd_hangman:'Guess the word', gd_fastmath:'Speed arithmetic',
+      cat_strategy:'Strategy', cat_quick:'Quick', cat_knowledge:'Knowledge', cat_word:'Word', cat_fun:'Fun', cat_speed:'Speed',
+      players_label:'players', pts:'pts', you:'(you)', admin_badge:'ADMIN', lvl:'Lv.',
+      your_turn:'Your turn!', waiting_for:'Waiting for {name}...', spectating:'👁️ You are spectating',
+      round_of:'Round {n} of {t}', question_of:'Question {n} of {t}', word_of:'Word {n} of {t}',
+      puzzle_of:'Puzzle {n} of {t}', problem_of:'Problem {n} of {t}',
+      solved_by:'Solved by {name}!', times_up:"Time's up!", answer_was:'Answer: {a}',
+      type_answer:'Type your answer...', type_guess:'Type your guess...',
+      you_win:'You Win! 🏆', winner_is:'{name} Wins!', its_draw:"It's a Draw!",
+      well_played:'Well played!', next_time:'Better luck next time!', plus_pts:'+3 points, +30 XP',
+      rps_choose:'Choose your weapon!', rps_rock:'Rock', rps_paper:'Paper', rps_scissors:'Scissors',
+      rps_you_chose:'You chose!', rps_waiting:'Waiting for opponent...',
+      hm_guess:'Guess a letter', hm_hint:'Hint', hm_failed:'Failed! The word was:',
+      fm_easy:'Easy', fm_medium:'Medium', fm_hard:'Hard', fm_challenge:'Challenge',
+      debate_timer:'Debate Timer', debate_topic:'Topic', debate_participants:'Participants',
+      debate_time_per:'Time Per Person (seconds)', debate_create:'Create Debate',
+      debate_speaking:'SPEAKING', debate_controls:'🎛️ Controls', debate_stats:'📊 Statistics',
+      debate_give_floor:'Click a participant to give them the floor:', debate_pause:'⏸ Pause',
+      debate_resume:'▶ Resume', debate_stop:'⏹ Stop', debate_reset:'🔄 Reset',
+      debate_end:'End Debate', debate_distribution:'Speaking Distribution',
+      debate_used:'used', debate_total:'total', debate_active:'Active debate:',
+      debate_open:'Open Debate Dashboard', debate_view:'View Debate Dashboard',
+      lb_title:'🏆 Global Leaderboard', lb_all:'All Games',
+      lb_rank:'Rank', lb_player:'Player', lb_played:'Played', lb_wins:'Wins', lb_wld:'W / L / D', lb_points:'Points',
+      lb_empty:'No scores yet. Play some games to get on the board!', lb_error:'Failed to load leaderboard',
+      modal_name:'Your Name', modal_enter_name:'Enter your name', modal_room_code:'Room Code',
+      modal_name_req:'Please enter your name', modal_code_req:'Please enter room code',
+      vote_next:'Vote for next game:', vote_result:'Vote Result:', vote_started:'Vote started!',
+      tourn_title:'Start Tournament', tourn_game:'Game Type', tourn_start:'🏆 Start Tournament',
+      tourn_desc:'Single elimination bracket with all room players.',
+      tourn_wins:'🏆 {name} wins the tournament!', tourn_r1:'Round 1', tourn_quarter:'Quarter',
+      tourn_semi:'Semi', tourn_final:'Final', tourn_champion:'Champion', tourn_bye:'BYE',
+      profile_avatar:'Choose Avatar',
+      ach_unlocked:'Achievement Unlocked!',
+      joined_room:'{name} joined the room', left_room:'A player left the room',
+      now_admin:'You are now the room admin!', kicked:'You have been kicked from the room', player_kicked:'Player kicked',
+      need_players:'Need at least {n} players',
+      btn_add_bot:'Add Bot', btn_remove_bots:'Remove All Bots',
+      bot_easy:'Easy Bot', bot_medium:'Medium Bot', bot_hard:'Hard Bot', bot_badge:'BOT',
+      theme_select:'Choose Theme', title_select:'Select Title', title_none:'No Title',
+      daily_title:'Daily Challenge', daily_reward:'Reward', daily_complete:'Nice! Challenge completed',
+      btn_share:'Share to X', btn_start_game:'🎮 Start Game',
+      gs_settings:'Game Settings', gs_timer:'Timer', gs_seconds:'seconds', gs_rounds:'Rounds',
+      gs_select_players:'Select Players', gs_select_2:'Select exactly 2 players',
+      profile_winrate:'Win Rate', profile_favgame:'Favorite Game', profile_maxstreak:'Max Streak',
+      profile_achievements:'Achievements', profile_none_yet:'None yet',
+      lang_toggle:'عربي', debate_created:'Debate created!',
+      quick_play:'Play Now', quick_play_desc:'Pick a game and start instantly vs a bot',
+      pick_game:'Pick a Game', pick_difficulty:'Pick Difficulty',
+      solo_play:'Solo Play', vs_bot:'vs Bot',
+      vs:'vs', score:'Score', win:'Win!', lose:'Loss!', draw:'Draw!',
+      reconnecting:'Reconnecting...', reconnected:'Reconnected'
+    }
+  };
+
+  let lang = localStorage.getItem('sg_lang') || 'ar';
+
+  function t(key, vars) {
+    let s = (LANGS[lang] && LANGS[lang][key]) || (LANGS.en[key]) || key;
+    if (vars) { for (const [k, v] of Object.entries(vars)) s = s.replace('{' + k + '}', v); }
+    return s;
+  }
+
+  function setLang(l) {
+    lang = l;
+    localStorage.setItem('sg_lang', l);
+    document.documentElement.lang = l;
+    document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('lang-toggle').textContent = t('lang_toggle');
+    // Update all data-i18n elements
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+    // Re-render dynamic content
+    renderHomeGames();
+    if (currentRoom) renderRoom();
+    renderLeaderboardFilters();
+  }
+
+  function toggleLang() {
+    setLang(lang === 'ar' ? 'en' : 'ar');
+  }
+
+  // ─── Themes ───
+  const THEMES = {
+    midnight:{ icon:'🟣', en:'Midnight Purple', ar:'بنفسجي' },
+    ocean:{ icon:'🔵', en:'Ocean Blue', ar:'أزرق' },
+    emerald:{ icon:'🟢', en:'Emerald', ar:'أخضر' },
+    abyss:{ icon:'⚫', en:'Pure Black', ar:'أسود' }
+  };
+  let currentTheme = localStorage.getItem('sg_theme') || 'midnight';
+  function applyTheme(id) { currentTheme = id; localStorage.setItem('sg_theme', id); document.documentElement.setAttribute('data-theme', id); }
+  function showThemePicker() {
+    const html = Object.entries(THEMES).map(([id, th]) =>
+      `<div class="theme-option ${id===currentTheme?'selected':''}" onclick="SpaceGames.setTheme('${id}')">${th.icon} <span>${lang==='ar'?th.ar:th.en}</span></div>`
+    ).join('');
+    openModal(t('theme_select'), `<div class="theme-grid">${html}</div>`);
+  }
+  function setTheme(id) { applyTheme(id); closeModal(); }
+
+  // ─── Achievements client reference ───
+  const ACHS_CLIENT = [
+    {id:'first_blood',icon:'🗡️',en:'First Blood',ar:'الضربة الأولى'},{id:'streak_3',icon:'🔥',en:'Streak Starter',ar:'بداية السلسلة'},
+    {id:'streak_5',icon:'🔥🔥',en:'On Fire',ar:'مشتعل'},{id:'streak_10',icon:'💥',en:'Unstoppable',ar:'لا يُوقف'},
+    {id:'checkmate',icon:'♟️',en:'Checkmate',ar:'كش ملك'},{id:'trivia_king',icon:'🧠',en:'Trivia King',ar:'ملك المعلومات'},
+    {id:'word_wizard',icon:'🔤',en:'Word Wizard',ar:'ساحر الكلمات'},{id:'emoji_expert',icon:'😎',en:'Emoji Expert',ar:'خبير الإيموجي'},
+    {id:'speed_demon',icon:'⚡',en:'Speed Demon',ar:'شيطان السرعة'},{id:'jack_trades',icon:'🃏',en:'All-Rounder',ar:'متعدد المواهب'},
+    {id:'social',icon:'🦋',en:'Social Star',ar:'نجم اجتماعي'},{id:'debater',icon:'🎙️',en:'Debater',ar:'المناظر'},
+    {id:'champion',icon:'👑',en:'Champion',ar:'البطل'},{id:'veteran',icon:'⭐',en:'Veteran',ar:'محارب قديم'},
+    {id:'legend',icon:'🏆',en:'Legend',ar:'أسطورة'}
+  ];
+  function getAchIcon(id) { const a = ACHS_CLIENT.find(x => x.id === id); return a ? a.icon : ''; }
+  function getAchName(id) { const a = ACHS_CLIENT.find(x => x.id === id); return a ? (lang === 'ar' ? a.ar : a.en) : id; }
+  function getTitleDisplay(titleId) { const a = ACHS_CLIENT.find(x => x.id === titleId); return a ? a.icon + ' ' + (lang === 'ar' ? a.ar : a.en) : ''; }
+
   // ─── State ───
   let socket = null;
   let playerId = null;
@@ -16,18 +227,22 @@ window.SpaceGames = (() => {
   let lastGameType = null;
   const registeredGames = {};
 
-  // ─── Game Registry ───
-  const gameInfo = {
-    tictactoe:    { name: 'Tic Tac Toe',    icon: '❌⭕', desc: 'Classic 3x3 grid', min: 2, max: 2, category: 'Strategy' },
-    connect4:     { name: 'Connect Four',    icon: '🔴🟡', desc: 'Get 4 in a row',   min: 2, max: 2, category: 'Strategy' },
-    chess:        { name: 'Chess',           icon: '♟️♚',  desc: 'The king of games', min: 2, max: 2, category: 'Strategy' },
-    rps:          { name: 'Rock Paper Scissors', icon: '🪨📄✂️', desc: 'Best of 5 showdown', min: 2, max: 2, category: 'Quick' },
-    trivia:       { name: 'Trivia Battle',   icon: '🧠🎯', desc: '10 questions, be fastest', min: 2, max: 20, category: 'Knowledge' },
-    wordscramble: { name: 'Word Scramble',   icon: '🔤🔀', desc: 'Unscramble the word', min: 2, max: 20, category: 'Word' },
-    emojiguess:   { name: 'Emoji Guess',     icon: '😎🤔', desc: 'Decode the emojis',  min: 2, max: 20, category: 'Fun' },
-    hangman:      { name: 'Hangman',         icon: '🪢💀', desc: 'Guess the word',     min: 2, max: 20, category: 'Word' },
-    fastmath:     { name: 'Fast Math',       icon: '🔢⚡', desc: 'Speed arithmetic',   min: 2, max: 20, category: 'Speed' }
-  };
+  // ─── Game Registry (uses t() for i18n) ───
+  function getGameInfo() {
+    return {
+      tictactoe:    { name: t('g_tictactoe'),    icon: '❌⭕', desc: t('gd_tictactoe'),    min: 2, max: 2, category: t('cat_strategy') },
+      connect4:     { name: t('g_connect4'),      icon: '🔴🟡', desc: t('gd_connect4'),     min: 2, max: 2, category: t('cat_strategy') },
+      chess:        { name: t('g_chess'),          icon: '♟️♚',  desc: t('gd_chess'),        min: 2, max: 2, category: t('cat_strategy') },
+      rps:          { name: t('g_rps'),            icon: '🪨📄✂️', desc: t('gd_rps'),       min: 2, max: 2, category: t('cat_quick') },
+      trivia:       { name: t('g_trivia'),         icon: '🧠🎯', desc: t('gd_trivia'),      min: 2, max: 20, category: t('cat_knowledge') },
+      wordscramble: { name: t('g_wordscramble'),   icon: '🔤🔀', desc: t('gd_wordscramble'),min: 2, max: 20, category: t('cat_word') },
+      emojiguess:   { name: t('g_emojiguess'),     icon: '😎🤔', desc: t('gd_emojiguess'),  min: 2, max: 20, category: t('cat_fun') },
+      hangman:      { name: t('g_hangman'),         icon: '🪢💀', desc: t('gd_hangman'),     min: 2, max: 20, category: t('cat_word') },
+      fastmath:     { name: t('g_fastmath'),        icon: '🔢⚡', desc: t('gd_fastmath'),   min: 2, max: 20, category: t('cat_speed') }
+    };
+  }
+  // Keep a reference for backward compat
+  const gameInfo = getGameInfo();
 
   // ─── Sound Effects System ───
   const audioCtx = typeof AudioContext !== 'undefined' ? new AudioContext() : null;
@@ -92,12 +307,72 @@ window.SpaceGames = (() => {
 
   // ─── Initialize ───
   function init() {
-    socket = io();
+    socket = io({ reconnection: true, reconnectionDelay: 1000, reconnectionAttempts: 20 });
     setupSocketListeners();
-    renderHomeGames();
+    setupReconnection();
+    setLang(lang);
+    applyTheme(currentTheme);
     handleHash();
     window.addEventListener('hashchange', handleHash);
     document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊' : '🔇';
+    // Show welcome for first-time users
+    if (!localStorage.getItem('sg_welcomed')) showWelcome();
+  }
+
+  function setupReconnection() {
+    const banner = document.getElementById('reconnect-banner');
+    socket.on('disconnect', () => {
+      if (banner) banner.style.display = 'flex';
+    });
+    socket.on('reconnect', () => {
+      if (banner) banner.style.display = 'none';
+      toast(lang === 'ar' ? 'تم إعادة الاتصال' : 'Reconnected', 'success');
+      // Re-join room if we were in one
+      if (currentRoom && playerName) {
+        socket.emit('rejoin-room', { roomCode: currentRoom.code, playerName }, (res) => {
+          if (res && res.success) {
+            playerId = res.playerId;
+            currentRoom = res.room;
+            isAdmin = res.isAdmin || currentRoom.admin === playerId;
+            renderRoom();
+          }
+        });
+      }
+    });
+  }
+
+  // ─── Welcome Overlay ───
+  function showWelcome() {
+    const steps = lang === 'ar' ? [
+      { icon: '🎮', title: 'العب فوراً', desc: 'اختر لعبة وابدأ ضد البوت بنقرة واحدة' },
+      { icon: '👥', title: 'ادعُ أصدقاءك', desc: 'أنشئ غرفة وشارك الرمز في مساحة X' },
+      { icon: '🏆', title: 'نافس وتصدّر', desc: 'اربح XP وألقاب وتسلق لوحة المتصدرين' }
+    ] : [
+      { icon: '🎮', title: 'Play Instantly', desc: 'Pick a game and start vs a bot in one tap' },
+      { icon: '👥', title: 'Invite Friends', desc: 'Create a room and share the code in your X Space' },
+      { icon: '🏆', title: 'Compete & Rise', desc: 'Earn XP, titles, and climb the leaderboard' }
+    ];
+    const stepsHtml = steps.map(s => `<div class="welcome-step"><div class="ws-icon">${s.icon}</div><div class="ws-title">${s.title}</div><div class="ws-desc">${s.desc}</div></div>`).join('');
+    const overlay = document.getElementById('welcome-overlay');
+    if (overlay) {
+      overlay.innerHTML = `<div class="welcome-content"><h2 class="gradient-text" style="font-size:2rem;margin-bottom:4px;">SpaceGames</h2><p style="color:var(--text-muted);margin-bottom:24px;">${lang === 'ar' ? 'مرحباً بك في ساحة الألعاب' : 'Welcome to the arena'}</p><div class="welcome-steps">${stepsHtml}</div><button class="btn btn-accent btn-lg" style="width:100%;justify-content:center;margin-top:20px;" onclick="SpaceGames.dismissWelcome()">${lang === 'ar' ? 'يلا نلعب! 🚀' : "Let's Play! 🚀"}</button></div>`;
+      overlay.style.display = 'flex';
+    }
+  }
+
+  function dismissWelcome() {
+    localStorage.setItem('sg_welcomed', '1');
+    const overlay = document.getElementById('welcome-overlay');
+    if (overlay) overlay.style.display = 'none';
+  }
+
+  function renderLeaderboardFilters() {
+    const el = document.getElementById('leaderboard-filters');
+    if (!el) return;
+    const gi = getGameInfo();
+    const filters = [{ key: 'all', label: t('lb_all') }];
+    for (const [id, g] of Object.entries(gi)) filters.push({ key: id, label: g.name });
+    el.innerHTML = filters.map(f => `<button onclick="SpaceGames.loadLeaderboard('${f.key}')" class="btn btn-sm filter-btn${f.key === 'all' ? ' active' : ''}" data-filter="${f.key}">${f.label}</button>`).join('');
   }
 
   // ─── Navigation ───
@@ -122,40 +397,34 @@ window.SpaceGames = (() => {
 
   // ─── Room Management ───
   function showCreateRoom() {
-    openModal('Create Room', `
+    openModal(t('btn_create_room'), `
       <div class="input-group">
-        <label>Your Name</label>
-        <input type="text" id="create-name" value="${playerName}" placeholder="Enter your name" maxlength="20">
+        <label>${t('modal_name')}</label>
+        <input type="text" id="create-name" value="${playerName}" placeholder="${t('modal_enter_name')}" maxlength="20">
       </div>
-      <button onclick="SpaceGames.createRoom()" class="btn btn-primary btn-lg">🚀 Create Room</button>
+      <button onclick="SpaceGames.createRoom()" class="btn btn-primary btn-lg">🚀 ${t('btn_create_room')}</button>
     `);
-    setTimeout(() => {
-      const input = document.getElementById('create-name');
-      if (input && !input.value) input.focus();
-    }, 100);
+    setTimeout(() => { const input = document.getElementById('create-name'); if (input && !input.value) input.focus(); }, 100);
   }
 
   function showJoinRoom(prefillCode) {
-    openModal('Join Room', `
+    openModal(t('btn_join_room'), `
       <div class="input-group">
-        <label>Room Code</label>
+        <label>${t('modal_room_code')}</label>
         <input type="text" id="join-code" value="${prefillCode || ''}" placeholder="XXXXXX" maxlength="6" style="text-transform:uppercase; text-align:center; font-size:1.3rem; letter-spacing:4px; font-family:var(--font-mono);">
       </div>
       <div class="input-group">
-        <label>Your Name</label>
-        <input type="text" id="join-name" value="${playerName}" placeholder="Enter your name" maxlength="20">
+        <label>${t('modal_name')}</label>
+        <input type="text" id="join-name" value="${playerName}" placeholder="${t('modal_enter_name')}" maxlength="20">
       </div>
-      <button onclick="SpaceGames.joinRoom()" class="btn btn-primary btn-lg">🔗 Join Room</button>
+      <button onclick="SpaceGames.joinRoom()" class="btn btn-primary btn-lg">🔗 ${t('btn_join_room')}</button>
     `);
-    setTimeout(() => {
-      const input = document.getElementById(prefillCode ? 'join-name' : 'join-code');
-      if (input && !input.value) input.focus();
-    }, 100);
+    setTimeout(() => { const input = document.getElementById(prefillCode ? 'join-name' : 'join-code'); if (input && !input.value) input.focus(); }, 100);
   }
 
   function createRoom() {
     const name = document.getElementById('create-name').value.trim();
-    if (!name) return toast('Please enter your name', 'error');
+    if (!name) return toast(t('modal_name_req'), 'error');
     playerName = name;
     localStorage.setItem('sg_playerName', name);
 
@@ -168,14 +437,15 @@ window.SpaceGames = (() => {
       closeModal();
       enterRoom();
       playSound('join');
+      renderDailyChallenge();
     });
   }
 
   function joinRoom() {
     const code = document.getElementById('join-code').value.trim().toUpperCase();
     const name = document.getElementById('join-name').value.trim();
-    if (!code) return toast('Please enter room code', 'error');
-    if (!name) return toast('Please enter your name', 'error');
+    if (!code) return toast(t('modal_code_req'), 'error');
+    if (!name) return toast(t('modal_name_req'), 'error');
     playerName = name;
     localStorage.setItem('sg_playerName', name);
 
@@ -220,21 +490,45 @@ window.SpaceGames = (() => {
 
     document.getElementById('room-title').textContent = isAdmin ? 'Your Room' : 'Room';
     document.getElementById('room-code-big').textContent = r.code;
-    document.getElementById('room-player-count').textContent = `${r.players.length} player${r.players.length > 1 ? 's' : ''}`;
+    document.getElementById('room-player-count').textContent = `${r.players.length} ${t('players_label')}`;
 
-    // Players
-    const playersHtml = r.players.map(p => `
-      <div class="player-tag ${p.id === r.admin ? 'admin' : ''}">
-        <span class="pt-avatar">${p.avatar || '😎'}</span>
-        <span>${escHtml(p.name)}</span>
-        ${p.id === r.admin ? '<span class="admin-badge">ADMIN</span>' : ''}
-        ${p.level ? '<span class="pt-level">Lv.' + p.level + '</span>' : ''}
-        <span class="score-badge">${p.score} pts</span>
-        ${p.id === playerId ? '<span style="color:var(--primary);font-size:0.7rem">(you)</span>' : ''}
-        ${isAdmin && p.id !== playerId ? '<span class="pt-kick" onclick="SpaceGames.kickPlayer(\'' + p.id + '\')" title="Kick player">🚫</span>' : ''}
-      </div>
-    `).join('');
+    // Players with rank colors
+    const sortedByScore = [...r.players].sort((a, b) => b.score - a.score);
+    const rankMap = {}; sortedByScore.forEach((p, i) => { rankMap[p.id] = i + 1; });
+    const playersHtml = r.players.map(p => {
+      const isBotP = p.isBot;
+      const rank = rankMap[p.id] || 99;
+      return `<div class="player-tag ${p.id === r.admin ? 'admin' : ''} ${isBotP ? 'bot-player' : ''}" data-rank="${rank <= 3 ? rank : ''}" data-elite="${(p.level || 0) >= 10}">
+        <span class="pt-avatar">${isBotP ? '🤖' : (p.avatar || '😎')}</span>
+        <span class="player-name-link" onclick="SpaceGames.showPlayerProfile('${escHtml(p.name)}')">${escHtml(p.name)}</span>
+        ${p.selectedTitle ? '<span class="player-title-badge">' + getTitleDisplay(p.selectedTitle) + '</span>' : ''}
+        ${p.id === r.admin ? '<span class="admin-badge">' + t('admin_badge') + '</span>' : ''}
+        ${isBotP ? '<span class="bot-badge">' + t('bot_badge') + ' ' + (p.difficulty==='easy'?'🟢':p.difficulty==='hard'?'🔴':'🟡') + '</span>' : ''}
+        ${p.level && !isBotP ? '<span class="pt-level">' + t('lvl') + p.level + '</span>' : ''}
+        <span class="score-badge">${p.score} ${t('pts')}</span>
+        ${p.id === playerId ? '<span style="color:var(--primary);font-size:0.7rem">' + t('you') + '</span>' : ''}
+        ${isAdmin && !isBotP && p.id !== playerId ? '<span class="pt-kick" onclick="SpaceGames.kickPlayer(\'' + p.id + '\')" title="Kick">🚫</span>' : ''}
+        ${isAdmin && isBotP ? '<span class="pt-kick" onclick="SpaceGames.removeBot(\'' + p.id + '\')" title="Remove">🗑️</span>' : ''}
+      </div>`;
+    }).join('');
     document.getElementById('room-players').innerHTML = playersHtml;
+
+    // Bot controls (admin only)
+    const botSection = document.getElementById('room-bot-section');
+    if (botSection) {
+      if (isAdmin) {
+        botSection.style.display = '';
+        document.getElementById('bot-controls').innerHTML = `
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="SpaceGames.addBot('easy')" class="btn btn-sm btn-success">🟢 ${t('bot_easy')}</button>
+            <button onclick="SpaceGames.addBot('medium')" class="btn btn-sm btn-secondary">🟡 ${t('bot_medium')}</button>
+            <button onclick="SpaceGames.addBot('hard')" class="btn btn-sm btn-danger">🔴 ${t('bot_hard')}</button>
+          </div>
+          <button onclick="SpaceGames.removeAllBots()" class="btn btn-sm btn-ghost" style="margin-top:8px;">🗑️ ${t('btn_remove_bots')}</button>`;
+      } else {
+        botSection.style.display = 'none';
+      }
+    }
 
     // Events section (vote/tournament) - admin only
     const specialSection = document.getElementById('room-special-section');
@@ -248,11 +542,12 @@ window.SpaceGames = (() => {
     const gamesSection = document.getElementById('room-games-section');
     if (isAdmin) {
       gamesSection.style.display = '';
-      const gamesHtml = Object.entries(gameInfo).map(([id, g]) => `
+      const gi = getGameInfo();
+      const gamesHtml = Object.entries(gi).map(([id, g]) => `
         <button class="mini-game-btn" onclick="SpaceGames.startGame('${id}')">
           <span class="mg-icon">${g.icon}</span>
           <span class="mg-name">${g.name}</span>
-          <span class="mg-players">${g.min === g.max ? g.min : g.min + '-' + g.max} players</span>
+          <span class="mg-players">${g.min === g.max ? g.min : g.min + '-' + g.max} ${t('players_label')}</span>
         </button>
       `).join('');
       document.getElementById('room-games-grid').innerHTML = gamesHtml;
@@ -290,8 +585,8 @@ window.SpaceGames = (() => {
   function copyRoomCode() {
     if (!currentRoom) return;
     const url = location.origin + '/#/room/' + currentRoom.code;
-    navigator.clipboard.writeText(url).then(() => toast('Room link copied!', 'success')).catch(() => {
-      navigator.clipboard.writeText(currentRoom.code).then(() => toast('Room code copied!', 'success'));
+    navigator.clipboard.writeText(url).then(() => toast(t('room_link_copied'), 'success')).catch(() => {
+      navigator.clipboard.writeText(currentRoom.code).then(() => toast(t('room_code_copied'), 'success'));
     });
   }
 
@@ -345,11 +640,13 @@ window.SpaceGames = (() => {
 
   function startGame(gameType) {
     if (!isAdmin || !currentRoom) return;
-    const info = gameInfo[gameType];
+    const gi = getGameInfo();
+    const info = gi[gameType];
+    if (!info) return;
     if (currentRoom.players.length < info.min) {
-      return toast(`Need at least ${info.min} players for ${info.name}`, 'error');
+      return toast(t('need_players', { n: info.min }), 'error');
     }
-    socket.emit('start-game', { gameType });
+    showGameSettings(gameType, info);
   }
 
   function onGameStarted(data) {
@@ -401,43 +698,91 @@ window.SpaceGames = (() => {
   }
 
   function showGameOverScreen(data) {
+    _lastGameResult = data;
     const overlay = document.getElementById('game-over-overlay');
     overlay.style.display = 'flex';
+    const container = document.getElementById('podium-container');
+    const pp = data.podiumPlayers || {};
+    const gi = getGameInfo();
+    const isMulti = data.scores && Object.keys(data.scores).length > 2;
 
+    let html = '<div class="podium-wrapper">';
+
+    // Result text
     if (data.draw) {
-      document.getElementById('game-over-icon').textContent = '🤝';
-      document.getElementById('game-over-title').textContent = "It's a Draw!";
-      document.getElementById('game-over-detail').textContent = 'Well played by both sides!';
+      html += `<div class="podium-result-text">🤝 ${t('its_draw')}</div>`;
       playSound('tick');
     } else if (data.winner === playerId) {
-      document.getElementById('game-over-icon').textContent = '🏆';
-      document.getElementById('game-over-title').textContent = 'You Win!';
-      document.getElementById('game-over-detail').textContent = '+3 points, +30 XP';
+      html += `<div class="podium-result-text" style="color:var(--accent)">🏆 ${t('you_win')}</div>`;
       playSound('win');
       fireConfetti();
     } else {
-      document.getElementById('game-over-icon').textContent = '😢';
-      document.getElementById('game-over-title').textContent = (data.winnerName || 'Someone') + ' Wins!';
-      document.getElementById('game-over-detail').textContent = 'Better luck next time!';
+      html += `<div class="podium-result-text">😢 ${t('winner_is', { name: data.winnerName || '?' })}</div>`;
       playSound('lose');
     }
 
-    // Rematch button (admin only, non-tournament)
+    if (isMulti && data.scores) {
+      // Kahoot-style podium for multiplayer
+      const sorted = Object.entries(data.scores).sort((a, b) => b[1] - a[1]);
+      const top3 = sorted.slice(0, 3);
+      const medals = ['gold', 'silver', 'bronze'];
+      // Reorder for visual: [2nd, 1st, 3rd]
+      const podiumOrder = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3.length === 2 ? [top3[1], top3[0]] : [top3[0]];
+
+      html += '<div class="podium-stage">';
+      podiumOrder.forEach(([pid, score], i) => {
+        const p = pp[pid] || { name: data.playerNames[pid] || '?', avatar: '😎' };
+        const actualRank = top3.findIndex(([id]) => id === pid);
+        const medal = medals[actualRank] || 'bronze';
+        const rank = actualRank + 1;
+        html += `<div class="podium-place" id="podium-${i}" style="transition-delay:${(2 - i) * 0.4}s">
+          <div class="podium-avatar">${p.avatar || '😎'}</div>
+          <div class="podium-name">${escHtml(p.name)}</div>
+          <div class="podium-pts">${score}</div>
+          <div class="podium-bar ${medal}"><span class="podium-rank">#${rank}</span></div>
+        </div>`;
+      });
+      html += '</div>';
+
+      // Full scoreboard
+      html += '<div class="podium-scorelist">';
+      sorted.forEach(([pid, score], i) => {
+        const p = pp[pid] || { name: data.playerNames[pid] || '?' };
+        html += `<div class="podium-score-row"><span class="psr-rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1)}</span><span class="psr-name">${escHtml(p.name)}</span><span class="psr-pts">${score}</span></div>`;
+      });
+      html += '</div>';
+    } else {
+      // VS result for 2-player games
+      const pids = Object.keys(pp);
+      if (pids.length >= 2) {
+        html += '<div class="vs-result">';
+        pids.forEach((pid, i) => {
+          const p = pp[pid];
+          const isW = pid === data.winner;
+          const isL = data.winner && pid !== data.winner;
+          html += `<div class="vs-player ${isW ? 'winner' : ''} ${isL ? 'loser' : ''}">
+            <div class="vs-avatar">${p.avatar || '😎'}</div>
+            <div class="vs-name">${escHtml(p.name)}</div>
+          </div>`;
+          if (i === 0 && pids.length > 1) html += `<div class="vs-separator">${t('vs')}</div>`;
+        });
+        html += '</div>';
+      }
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+
+    // Staggered podium reveal
+    setTimeout(() => {
+      document.querySelectorAll('.podium-place').forEach(el => el.classList.add('revealed'));
+    }, 200);
+
+    // Buttons
     const rematchBtn = document.getElementById('btn-rematch');
     if (rematchBtn) rematchBtn.style.display = (isAdmin && !data.tournament) ? '' : 'none';
-
-    // Scores for multi-player games
-    let scoresHtml = '';
-    if (data.scores) {
-      const entries = Object.entries(data.scores).sort((a, b) => b[1] - a[1]);
-      scoresHtml = entries.map(([pid, score]) => `
-        <div class="gos-row">
-          <span class="gos-name">${escHtml(data.playerNames[pid] || pid)}</span>
-          <span class="gos-pts">${score} pts</span>
-        </div>
-      `).join('');
-    }
-    document.getElementById('game-over-scores').innerHTML = scoresHtml;
+    const shareBtn = document.getElementById('btn-share-x');
+    if (shareBtn) shareBtn.style.display = '';
   }
 
   function dismissGameOver() {
@@ -466,22 +811,22 @@ window.SpaceGames = (() => {
       </label>`
     ).join('');
 
-    openModal('Create Debate', `
+    openModal(t('debate_create'), `
       <div class="input-group">
-        <label>Topic</label>
-        <input type="text" id="debate-topic-input" placeholder="What's the discussion about?" maxlength="100">
+        <label>${t('debate_topic')}</label>
+        <input type="text" id="debate-topic-input" placeholder="" maxlength="100">
       </div>
       <div class="input-group">
-        <label>Participants</label>
+        <label>${t('debate_participants')}</label>
         <div style="max-height:150px;overflow-y:auto;padding:8px;background:var(--bg-2);border-radius:var(--radius-sm);">
           ${playerOptions}
         </div>
       </div>
       <div class="input-group">
-        <label>Time Per Person (seconds)</label>
+        <label>${t('debate_time_per')}</label>
         <input type="number" id="debate-time-input" value="120" min="30" max="600">
       </div>
-      <button onclick="SpaceGames.createDebate()" class="btn btn-accent btn-lg">⏱️ Create Debate</button>
+      <button onclick="SpaceGames.createDebate()" class="btn btn-accent btn-lg">⏱️ ${t('debate_create')}</button>
     `);
   }
 
@@ -495,7 +840,7 @@ window.SpaceGames = (() => {
 
     socket.emit('create-debate', { topic, participants, timePerPerson });
     closeModal();
-    toast('Debate created!', 'success');
+    toast(t('debate_created'), 'success');
   }
 
   function openDebate() {
@@ -612,7 +957,7 @@ window.SpaceGames = (() => {
   function showAvatarPicker() {
     const avatars = ['😎','🤠','👾','🦊','🐱','🦁','🐺','🦅','🐉','🎃','👻','🤖','🧙','🥷','🏴‍☠️','🦄','🐧','🦋','🔥','⚡','🌟','💎','🎭','🃏'];
     const grid = avatars.map(a => `<div class="avatar-option ${a === playerAvatar ? 'selected' : ''}" onclick="SpaceGames.pickAvatar('${a}')">${a}</div>`).join('');
-    openModal('Choose Avatar', `<div class="avatar-grid">${grid}</div>`);
+    openModal(t('profile_avatar'), `<div class="avatar-grid">${grid}</div>`);
   }
 
   function pickAvatar(avatar) {
@@ -624,11 +969,209 @@ window.SpaceGames = (() => {
     playSound('move');
   }
 
+  // ─── Quick Play (one-tap) ───
+  function showQuickPlay() {
+    const gi = getGameInfo();
+    const gamesHtml = Object.entries(gi).map(([id, g]) =>
+      `<button class="quick-game-btn" onclick="SpaceGames.quickPlayPick('${id}')">
+        <span class="qg-icon">${g.icon}</span>
+        <span class="qg-name">${g.name}</span>
+      </button>`
+    ).join('');
+    openModal(t('quick_play'), `
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">${t('quick_play_desc')}</p>
+      <div class="input-group" style="margin-bottom:12px;">
+        <label>${t('modal_name')}</label>
+        <input type="text" id="qp-name" value="${playerName}" placeholder="${t('modal_enter_name')}" maxlength="20">
+      </div>
+      <div class="quick-games-grid">${gamesHtml}</div>
+    `);
+  }
+
+  let _qpGameType = null;
+  function quickPlayPick(gameType) {
+    _qpGameType = gameType;
+    const name = document.getElementById('qp-name')?.value?.trim();
+    if (!name) return toast(t('modal_name_req'), 'error');
+    // Show difficulty picker
+    document.getElementById('modal-body').innerHTML = `
+      <p style="text-align:center;font-size:1rem;margin-bottom:16px;">${getGameInfo()[gameType].icon} ${getGameInfo()[gameType].name}</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button onclick="SpaceGames.quickPlayStart('easy')" class="btn btn-success btn-lg" style="justify-content:center;">🟢 ${t('bot_easy')}</button>
+        <button onclick="SpaceGames.quickPlayStart('medium')" class="btn btn-secondary btn-lg" style="justify-content:center;border:2px solid var(--accent);">🟡 ${t('bot_medium')}</button>
+        <button onclick="SpaceGames.quickPlayStart('hard')" class="btn btn-danger btn-lg" style="justify-content:center;">🔴 ${t('bot_hard')}</button>
+      </div>
+    `;
+  }
+
+  function quickPlayStart(difficulty) {
+    const nameEl = document.getElementById('qp-name');
+    const name = nameEl ? nameEl.value.trim() : playerName;
+    if (!name) return toast(t('modal_name_req'), 'error');
+    playerName = name;
+    localStorage.setItem('sg_playerName', name);
+    closeModal();
+
+    // 1. Create room
+    socket.emit('create-room', { playerName: name }, (res) => {
+      if (res.error) return toast(res.error, 'error');
+      playerId = res.playerId;
+      currentRoom = res.room;
+      isAdmin = true;
+      if (res.profile) { playerProfile = res.profile; playerAvatar = res.profile.avatar; playerLevel = res.profile.level; }
+
+      // 2. Add bot, wait for confirmation, then start game
+      socket.emit('add-bot', { difficulty });
+      socket.once('room-update', () => {
+        socket.emit('start-game', { gameType: _qpGameType });
+      });
+
+      enterRoom();
+      playSound('join');
+    });
+  }
+
+  // ─── Bots ───
+  function addBot(difficulty) { if (!isAdmin) return; socket.emit('add-bot', { difficulty }); }
+  function removeBot(botId) { if (!isAdmin) return; socket.emit('remove-bot', { botId }); }
+  function removeAllBots() { if (!isAdmin) return; socket.emit('remove-all-bots'); }
+
+  // ─── Player Profile Card ───
+  function showPlayerProfile(name) {
+    socket.emit('get-profile', { name }, (data) => {
+      if (!data) return;
+      const gi = getGameInfo();
+      const lvl = data.level || 1;
+      const xpNeeded = lvl * lvl * 100;
+      const xpPrev = (lvl - 1) * (lvl - 1) * 100;
+      const xpPct = xpNeeded > xpPrev ? Math.min(((data.xp - xpPrev) / (xpNeeded - xpPrev)) * 100, 100) : 0;
+      const achHtml = (data.achievements || []).map(id => `<span class="profile-ach" title="${getAchName(id)}">${getAchIcon(id)}</span>`).join('') || `<span style="color:var(--text-dim)">${t('profile_none_yet')}</span>`;
+      const favGame = data.favoriteGame && gi[data.favoriteGame] ? gi[data.favoriteGame].icon + ' ' + gi[data.favoriteGame].name : '-';
+      openModal(data.name, `<div class="profile-card">
+        <div class="profile-header"><span class="profile-avatar">${data.avatar || '😎'}</span><div><div class="profile-name">${escHtml(data.name)}</div>${data.selectedTitle ? '<div class="profile-title">' + getTitleDisplay(data.selectedTitle) + '</div>' : ''}</div></div>
+        <div class="profile-level"><span>${t('lvl')}${lvl}</span><div class="xp-bar"><div class="xp-fill" style="width:${xpPct}%"></div></div><span class="xp-text">${data.xp} XP</span></div>
+        <div class="profile-stats-grid">
+          <div class="profile-stat"><div class="ps-value">${data.gamesPlayed}</div><div class="ps-label">${t('lb_played')}</div></div>
+          <div class="profile-stat"><div class="ps-value">${data.winRate || 0}%</div><div class="ps-label">${t('profile_winrate')}</div></div>
+          <div class="profile-stat"><div class="ps-value">${data.streak || 0}</div><div class="ps-label">Streak</div></div>
+          <div class="profile-stat"><div class="ps-value">${data.totalPoints}</div><div class="ps-label">${t('lb_points')}</div></div>
+        </div>
+        <div class="profile-row"><span class="pr-label">${t('profile_favgame')}</span><span>${favGame}</span></div>
+        <div class="profile-row"><span class="pr-label">${t('profile_maxstreak')}</span><span>${data.maxStreak || 0}</span></div>
+        <div class="profile-section-title">${t('profile_achievements')}</div>
+        <div class="profile-achievements">${achHtml}</div>
+      </div>`);
+    });
+  }
+
+  // ─── Game Settings Modal ───
+  function showGameSettings(gameType, info) {
+    const isTimed = ['trivia','wordscramble','emojiguess','hangman','fastmath'].includes(gameType);
+    const hasRounds = ['rps','trivia','wordscramble','emojiguess','hangman','fastmath'].includes(gameType);
+    const isTwoPlayer = info.max === 2;
+    let html = `<div class="game-settings"><div class="gs-game-header">${info.icon} ${info.name}</div>`;
+    if (isTwoPlayer && currentRoom.players.length > 2) {
+      html += `<div class="input-group"><label>${t('gs_select_players')}</label><div class="gs-player-select">`;
+      currentRoom.players.forEach(p => { html += `<label class="gs-player-check"><input type="checkbox" class="gs-pcb" value="${p.id}" ${p.id===playerId?'checked':''}> ${p.avatar||'😎'} ${escHtml(p.name)}</label>`; });
+      html += `</div></div>`;
+    }
+    if (isTimed) {
+      const def = {trivia:15,wordscramble:30,emojiguess:30,hangman:45,fastmath:20}[gameType] || 15;
+      html += `<div class="input-group"><label>${t('gs_timer')} (${t('gs_seconds')})</label><input type="range" id="gs-timer" min="5" max="60" value="${def}" oninput="document.getElementById('gs-tv').textContent=this.value"><span id="gs-tv" class="gs-range-val">${def}</span></div>`;
+    }
+    if (hasRounds) {
+      const def = {rps:5,trivia:10,wordscramble:8,emojiguess:8,hangman:8,fastmath:10}[gameType] || 5;
+      html += `<div class="input-group"><label>${t('gs_rounds')}</label><input type="range" id="gs-rounds" min="1" max="${def}" value="${def}" oninput="document.getElementById('gs-rv').textContent=this.value"><span id="gs-rv" class="gs-range-val">${def}</span></div>`;
+    }
+    html += `<button onclick="SpaceGames.confirmStartGame('${gameType}')" class="btn btn-accent btn-lg" style="width:100%;justify-content:center;margin-top:8px;">${t('btn_start_game')}</button></div>`;
+    openModal(t('gs_settings'), html);
+  }
+
+  function confirmStartGame(gameType) {
+    const options = {};
+    const te = document.getElementById('gs-timer');
+    if (te) options.timer = parseInt(te.value);
+    const re = document.getElementById('gs-rounds');
+    if (re) options.rounds = parseInt(re.value);
+    const checks = document.querySelectorAll('.gs-pcb:checked');
+    if (checks.length === 2) options.players = Array.from(checks).map(c => c.value);
+    else if (checks.length > 0 && checks.length !== 2) return toast(t('gs_select_2'), 'error');
+    socket.emit('start-game', { gameType, options });
+    closeModal();
+  }
+
+  // ─── Share to X ───
+  let _lastGameResult = null;
+  function shareToX() {
+    if (!_lastGameResult) return;
+    const d = _lastGameResult;
+    const gi = getGameInfo();
+    const gn = gi[d.gameType]?.name || d.gameType;
+    let txt;
+    if (d.winner === playerId) {
+      const sc = d.scores ? d.scores[playerId] : null;
+      txt = lang === 'ar'
+        ? `🏆 فزت في ${gn}${sc !== null ? ' بنتيجة ' + sc : ''}! العب معي على SpaceGames 🎮`
+        : `🏆 I won ${gn}${sc !== null ? ' with ' + sc + ' pts' : ''}! Play with me on SpaceGames 🎮`;
+    } else if (d.draw) {
+      txt = lang === 'ar' ? `🤝 تعادلت في ${gn}! جرب تهزمني 🎮` : `🤝 I tied in ${gn}! Try to beat me 🎮`;
+    } else {
+      txt = lang === 'ar' ? `🎮 لعبت ${gn} على SpaceGames! انضم وتحداني` : `🎮 Just played ${gn} on SpaceGames! Join and challenge me`;
+    }
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(txt + '\n' + location.origin)}`;
+    window.open(url, '_blank', 'width=550,height=420');
+  }
+
+  // ─── Daily Challenge ───
+  function renderDailyChallenge() {
+    const el = document.getElementById('daily-challenge-card');
+    if (!el) return;
+    fetch('/api/daily-challenge').then(r => r.json()).then(dc => {
+      if (!playerProfile || !playerProfile.dailyChallenge) { el.style.display = 'none'; return; }
+      el.style.display = '';
+      const pdc = playerProfile.dailyChallenge;
+      const progress = Math.min(pdc.progress || 0, dc.target);
+      const pct = (progress / dc.target) * 100;
+      const desc = lang === 'ar' ? dc.ar : dc.en;
+      el.className = 'daily-challenge-card' + (pdc.completed ? ' completed' : '');
+      el.innerHTML = `
+        <div class="dc-title">⭐ ${t('daily_title')}</div>
+        <div class="dc-desc">${desc}</div>
+        <div class="dc-bar"><div class="dc-fill" style="width:${pct}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+          <span>${progress} / ${dc.target}</span>
+          <span class="dc-reward">${t('daily_reward')}: +${dc.reward} XP</span>
+        </div>
+        ${pdc.completed ? '<div style="margin-top:8px;color:var(--success);font-weight:700;">✅ ' + t('daily_complete') + '</div>' : ''}
+      `;
+    }).catch(() => { el.style.display = 'none'; });
+  }
+
+  // ─── Title Selector (extends avatar picker) ───
+  function showTitlePicker() {
+    if (!playerProfile || !playerProfile.achievements) return;
+    const earned = playerProfile.achievements;
+    const items = earned.map(id => {
+      const a = ACHS_CLIENT.find(x => x.id === id);
+      if (!a) return '';
+      const sel = playerProfile.selectedTitle === id ? ' selected' : '';
+      return `<div class="title-option${sel}" onclick="SpaceGames.selectTitle('${id}')">${a.icon} ${lang === 'ar' ? a.ar : a.en}</div>`;
+    }).join('');
+    const noneSelected = !playerProfile.selectedTitle ? ' selected' : '';
+    openModal(t('title_select'), `<div class="title-grid"><div class="title-option${noneSelected}" onclick="SpaceGames.selectTitle(null)">❌ ${t('title_none')}</div>${items}</div>`);
+  }
+
+  function selectTitle(titleId) {
+    socket.emit('select-title', { titleId }, (res) => {
+      if (res && res.success) { if (playerProfile) playerProfile.selectedTitle = titleId; closeModal(); }
+    });
+  }
+
   // ─── Kick Player ───
   function kickPlayer(targetId) {
     if (!isAdmin) return;
     socket.emit('kick-player', { targetId });
-    toast('Player kicked', 'info');
+    toast(t('player_kicked'), 'info');
   }
 
   // ─── Rematch ───
@@ -642,7 +1185,7 @@ window.SpaceGames = (() => {
   function createVote() {
     if (!isAdmin) return;
     socket.emit('create-vote');
-    toast('Vote started!', 'success');
+    toast(t('vote_started'), 'success');
   }
 
   function castVote(option) {
@@ -653,9 +1196,10 @@ window.SpaceGames = (() => {
   function renderVote(data) {
     const el = document.getElementById('vote-display');
     if (!el || !data) { if (el) el.innerHTML = ''; return; }
+    const gi = getGameInfo();
     const total = Object.values(data.votes).reduce((s, v) => s + v, 0) || 1;
     const optionsHtml = data.options.map(opt => {
-      const info = gameInfo[opt];
+      const info = gi[opt];
       if (!info) return '';
       const count = data.votes[opt] || 0;
       const pct = ((count / total) * 100).toFixed(0);
@@ -665,19 +1209,20 @@ window.SpaceGames = (() => {
         <div class="vote-bar-container"><div class="vote-bar" style="width:${pct}%"></div><span class="vote-bar-label">${count}</span></div>
       </div>`;
     }).join('');
-    el.innerHTML = `<div class="vote-card"><div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px">Vote for next game:</div>${optionsHtml}</div>`;
+    el.innerHTML = `<div class="vote-card"><div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px">${t('vote_next')}</div>${optionsHtml}</div>`;
   }
 
   // ─── Tournament ───
   function showTournamentSetup() {
     if (!isAdmin) return;
-    const gameOptions = Object.entries(gameInfo).filter(([, g]) => g.min === 2 && g.max === 2).map(([id, g]) =>
+    const gi = getGameInfo();
+    const gameOptions = Object.entries(gi).filter(([, g]) => g.min === 2 && g.max === 2).map(([id, g]) =>
       `<option value="${id}">${g.icon} ${g.name}</option>`
     ).join('');
-    openModal('Start Tournament', `
-      <div class="input-group"><label>Game Type</label><select id="tournament-game">${gameOptions}</select></div>
-      <p style="font-size:0.8rem;color:var(--text-muted)">Single elimination bracket with all room players.</p>
-      <button onclick="SpaceGames.startTournament()" class="btn btn-accent btn-lg">🏆 Start Tournament</button>
+    openModal(t('tourn_title'), `
+      <div class="input-group"><label>${t('tourn_game')}</label><select id="tournament-game">${gameOptions}</select></div>
+      <p style="font-size:0.8rem;color:var(--text-muted)">${t('tourn_desc')}</p>
+      <button onclick="SpaceGames.startTournament()" class="btn btn-accent btn-lg">${t('tourn_start')}</button>
     `);
   }
 
@@ -722,7 +1267,7 @@ window.SpaceGames = (() => {
     const container = document.getElementById('achievement-container');
     const el = document.createElement('div');
     el.className = 'achievement-toast';
-    el.innerHTML = `<div class="ach-icon">${ach.icon}</div><div class="ach-label">Achievement Unlocked</div><div class="ach-name">${ach.name}</div><div class="ach-desc">${ach.desc}</div>`;
+    el.innerHTML = `<div class="ach-icon">${ach.icon}</div><div class="ach-label">${t('ach_unlocked')}</div><div class="ach-name">${ach.name}</div><div class="ach-desc">${ach.desc}</div>`;
     container.appendChild(el);
     setTimeout(() => el.remove(), 4000);
   }
@@ -789,17 +1334,18 @@ window.SpaceGames = (() => {
     });
 
     socket.on('player-joined', (data) => {
-      addSystemMessage(`${data.name} joined the room`);
-      toast(`${data.name} joined!`, 'info');
+      addSystemMessage(t('joined_room', { name: data.name }));
+      toast(t('joined_room', { name: data.name }), 'info');
+      playSound('join');
     });
 
     socket.on('player-left', (data) => {
-      addSystemMessage(`A player left the room`);
+      addSystemMessage(t('left_room'));
     });
 
     socket.on('new-admin', (data) => {
       isAdmin = data.adminId === playerId;
-      if (isAdmin) toast('You are now the room admin!', 'info');
+      if (isAdmin) toast(t('now_admin'), 'info');
       renderRoom();
     });
 
@@ -886,24 +1432,31 @@ window.SpaceGames = (() => {
       }
     });
 
-    socket.on('tournament-update', (t) => {
-      if (currentRoom) currentRoom.tournament = t;
-      renderTournamentBracket(t, 'tournament-display');
-      if (t.champion) {
-        const champName = t.playerNames[t.champion] || 'Unknown';
-        toast('🏆 ' + champName + ' wins the tournament!', 'success');
-        if (t.champion === playerId) fireConfetti();
+    socket.on('tournament-update', (tournData) => {
+      if (currentRoom) currentRoom.tournament = tournData;
+      renderTournamentBracket(tournData, 'tournament-display');
+      if (tournData.champion) {
+        const champName = tournData.playerNames[tournData.champion] || '?';
+        toast(t('tourn_wins', { name: champName }), 'success');
+        if (tournData.champion === playerId) fireConfetti();
       }
     });
 
     socket.on('player-kicked', (data) => {
-      toast(data.message || 'You have been kicked', 'error');
+      toast(t('kicked'), 'error');
       currentRoom = null;
       isAdmin = false;
       playerId = null;
       document.getElementById('nav-user').style.display = 'none';
       location.hash = '';
       navigate('home');
+    });
+
+    socket.on('daily-challenge-complete', (data) => {
+      toast(t('daily_complete') + ' +' + data.reward + ' XP', 'success');
+      playSound('achievement');
+      if (playerProfile && playerProfile.dailyChallenge) playerProfile.dailyChallenge.completed = true;
+      renderDailyChallenge();
     });
 
     socket.on('error-msg', (data) => {
@@ -915,12 +1468,13 @@ window.SpaceGames = (() => {
   function renderHomeGames() {
     const grid = document.getElementById('home-games-grid');
     if (!grid) return;
-    grid.innerHTML = Object.entries(gameInfo).map(([id, g]) => `
+    const gi = getGameInfo();
+    grid.innerHTML = Object.entries(gi).map(([id, g]) => `
       <div class="game-card">
         <div class="game-icon">${g.icon}</div>
         <h4>${g.name}</h4>
         <p>${g.desc}</p>
-        <div class="player-req">${g.min === g.max ? g.min : g.min + '-' + g.max} players | ${g.category}</div>
+        <div class="player-req">${g.min === g.max ? g.min : g.min + '-' + g.max} ${t('players_label')} | ${g.category}</div>
       </div>
     `).join('');
   }
@@ -974,7 +1528,11 @@ window.SpaceGames = (() => {
     endCurrentGame, backToRoom, dismissGameOver,
     showCreateDebate, createDebate, openDebate, debateAction,
     loadLeaderboard, closeModal, toast,
-    toggleSound, showAvatarPicker, pickAvatar, kickPlayer,
+    toggleSound, toggleLang, t, showAvatarPicker, pickAvatar, kickPlayer,
+    addBot, removeBot, removeAllBots,
+    showQuickPlay, quickPlayPick, quickPlayStart,
+    showThemePicker, setTheme, showPlayerProfile, showTitlePicker, selectTitle,
+    shareToX, confirmStartGame, dismissWelcome,
     requestRematch, createVote, castVote,
     showTournamentSetup, startTournament, playTournamentMatch,
     get playerId() { return playerId; },

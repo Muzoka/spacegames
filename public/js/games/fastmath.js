@@ -7,10 +7,10 @@
 
   // ─── Difficulty Labels & Colors ───
   var DIFFICULTY_MAP = {
-    1: { label: 'Easy',      color: 'var(--success)' },
-    2: { label: 'Medium',    color: 'var(--accent)' },
-    3: { label: 'Hard',      color: '#f97316' },
-    4: { label: 'Challenge', color: 'var(--danger)' }
+    1: { labelKey: 'fm_easy',      color: 'var(--success)' },
+    2: { labelKey: 'fm_medium',    color: 'var(--accent)' },
+    3: { labelKey: 'fm_hard',      color: '#f97316' },
+    4: { labelKey: 'fm_challenge', color: 'var(--danger)' }
   };
 
   // ─── Handler ───
@@ -80,7 +80,7 @@
 
       this._submitBtn = document.createElement('button');
       this._submitBtn.className = 'fm-submit-btn';
-      this._submitBtn.textContent = 'Submit';
+      this._submitBtn.textContent = SpaceGames.t('btn_submit');
       this._submitBtn.addEventListener('click', this._onSubmit.bind(this));
       this._inputRowEl.appendChild(this._submitBtn);
 
@@ -134,14 +134,14 @@
       // Determine status message
       if (data.state.solved && data.state.solvedBy) {
         var solverName = this._getPlayerName(data.state.solvedBy);
-        this._statusEl.textContent = 'Solved by ' + solverName + '!';
+        this._statusEl.textContent = SpaceGames.t('solved_by', {name: solverName});
         this._statusEl.className = 'fm-status fm-status-solved';
       } else if (data.timeout) {
         var answerText = data.state.answer !== undefined ? data.state.answer : '???';
-        this._statusEl.textContent = 'Time\'s up! Answer: ' + answerText;
+        this._statusEl.textContent = SpaceGames.t('times_up') + ' ' + SpaceGames.t('answer_was', {a: answerText});
         this._statusEl.className = 'fm-status fm-status-timeout';
       } else {
-        this._statusEl.textContent = 'Type your answer...';
+        this._statusEl.textContent = SpaceGames.t('type_answer');
         this._statusEl.className = 'fm-status';
       }
 
@@ -162,13 +162,13 @@
 
       // Progress
       if (this._progressEl) {
-        this._progressEl.textContent = 'Problem ' + (state.currentProblem + 1) + ' of ' + state.totalProblems;
+        this._progressEl.textContent = SpaceGames.t('problem_of', {n: state.currentProblem + 1, t: state.totalProblems});
       }
 
       // Difficulty badge
       if (this._diffBadgeEl) {
         var diff = DIFFICULTY_MAP[state.difficulty] || DIFFICULTY_MAP[1];
-        this._diffBadgeEl.textContent = diff.label;
+        this._diffBadgeEl.textContent = SpaceGames.t(diff.labelKey);
         this._diffBadgeEl.style.background = diff.color;
         this._diffBadgeEl.style.color = '#fff';
       }
@@ -249,7 +249,7 @@
       }
       entries.sort(function (a, b) { return b.score - a.score; });
 
-      var html = '<div class="fm-scores-title">Scores</div>';
+      var html = '<div class="fm-scores-title">' + SpaceGames.t('score') + '</div>';
       for (var j = 0; j < entries.length; j++) {
         var e = entries[j];
         var isMe = e.id === this._ctx.playerId;

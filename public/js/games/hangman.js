@@ -176,13 +176,13 @@
       // Determine status message
       if (data.state.solved && data.state.solvedBy) {
         var solverName = this._getPlayerName(data.state.solvedBy);
-        this._messageEl.textContent = 'Solved by ' + solverName + '!';
+        this._messageEl.textContent = SpaceGames.t('solved_by', {name: solverName});
         this._messageEl.style.color = '#4ade80';
       } else if (data.state.failed) {
-        this._messageEl.textContent = 'Failed! Too many wrong guesses.';
+        this._messageEl.textContent = SpaceGames.t('hm_failed');
         this._messageEl.style.color = '#f87171';
       } else if (data.timeout) {
-        this._messageEl.textContent = "Time's up!";
+        this._messageEl.textContent = SpaceGames.t('times_up');
         this._messageEl.style.color = '#fbbf24';
       } else if (data.state.currentWord !== prevWord) {
         // New word round
@@ -201,7 +201,7 @@
 
       // Progress
       if (this._progressEl) {
-        this._progressEl.textContent = 'Word ' + (state.currentWord + 1) + ' of ' + state.totalWords;
+        this._progressEl.textContent = SpaceGames.t('word_of', {n: state.currentWord + 1, t: state.totalWords});
       }
 
       // Hangman figure
@@ -233,7 +233,7 @@
 
       // Hint
       if (this._hintEl) {
-        this._hintEl.textContent = state.hint ? 'Hint: ' + state.hint : '';
+        this._hintEl.textContent = state.hint ? SpaceGames.t('hm_hint') + ': ' + state.hint : '';
       }
 
       // Update letter buttons
@@ -319,7 +319,7 @@
       var scores = state.scores || {};
       var playerIds = state.players || [];
 
-      var html = '<div style="font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; border-top: 1px solid #333; padding-top: 12px;">Scores</div>';
+      var html = '<div style="font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; border-top: 1px solid #333; padding-top: 12px;">' + SpaceGames.t('score') + '</div>';
 
       for (var i = 0; i < playerIds.length; i++) {
         var pid = playerIds[i];
@@ -329,7 +329,7 @@
 
         html += '<div style="display: flex; justify-content: space-between; padding: 4px 8px; border-radius: 4px;' + (isMe ? ' background: rgba(124,58,237,0.15);' : '') + '">';
         html += '<span style="color:' + (isMe ? '#a78bfa' : '#ccc') + ';">' + escHtml(name);
-        if (isMe) html += ' <span style="color: #666; font-size: 12px;">(you)</span>';
+        if (isMe) html += ' <span style="color: #666; font-size: 12px;">' + SpaceGames.t('you') + '</span>';
         html += '</span>';
         html += '<span style="color: #fff; font-weight: bold;">' + score + '</span>';
         html += '</div>';
