@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpaceGames - Level Up Your X Spaces</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+</head>
+<body>
+  <!-- ═══ NAVIGATION ═══ -->
+  <nav id="main-nav">
+    <div class="nav-brand" onclick="SpaceGames.navigate('home')">
+      <span class="brand-icon">🎮</span>
+      <span class="brand-text">SpaceGames</span>
+    </div>
+    <div class="nav-links">
+      <a onclick="SpaceGames.navigate('home')" class="nav-link active" data-page="home">Home</a>
+      <a onclick="SpaceGames.navigate('leaderboard')" class="nav-link" data-page="leaderboard">Leaderboard</a>
+    </div>
+    <div class="nav-right">
+      <button id="sound-toggle" onclick="SpaceGames.toggleSound()" class="btn btn-sm btn-ghost" title="Toggle sound">🔊</button>
+      <div class="nav-user" id="nav-user" style="display:none">
+        <span id="nav-avatar" class="nav-avatar" onclick="SpaceGames.showAvatarPicker()" title="Change avatar"></span>
+        <span id="nav-player-name"></span>
+        <span id="nav-level" class="level-badge"></span>
+        <span id="nav-room-code" class="room-badge"></span>
+        <button onclick="SpaceGames.leaveRoom()" class="btn btn-sm btn-danger">Leave</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══ TOAST CONTAINER ═══ -->
+  <div id="toast-container"></div>
+
+  <!-- ═══ REACTION BUBBLES ═══ -->
+  <div id="reaction-container"></div>
+
+  <!-- ═══ MAIN APP ═══ -->
+  <main id="app">
+
+    <!-- ─── HOME PAGE ─── -->
+    <section id="page-home" class="page active">
+      <div class="hero">
+        <h1 class="hero-title">
+          <span class="gradient-text">SpaceGames</span>
+        </h1>
+        <p class="hero-subtitle">The ultimate games & tools platform for X Spaces</p>
+        <p class="hero-desc">Play games, host debates, track scores — all in real-time with your Space audience</p>
+        <div class="hero-actions">
+          <button onclick="SpaceGames.showCreateRoom()" class="btn btn-primary btn-lg">
+            <span>🚀</span> Create Room
+          </button>
+          <button onclick="SpaceGames.showJoinRoom()" class="btn btn-secondary btn-lg">
+            <span>🔗</span> Join Room
+          </button>
+        </div>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h3>7 Fun Games</h3>
+          <p>XO, Connect 4, Chess, RPS, Trivia, Word Scramble, Emoji Guess</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⏱️</div>
+          <h3>Debate Timer</h3>
+          <p>Structured discussions with fair time allocation and live dashboard</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🏆</div>
+          <h3>Leaderboard</h3>
+          <p>Track scores per game and globally — compete to be #1</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">👥</div>
+          <h3>Real-Time</h3>
+          <p>Instant sync for all players — perfect for live X Spaces</p>
+        </div>
+      </div>
+
+      <div class="games-preview">
+        <h2 class="section-title">Available Games</h2>
+        <div class="games-grid" id="home-games-grid"></div>
+      </div>
+    </section>
+
+    <!-- ─── ROOM PAGE ─── -->
+    <section id="page-room" class="page">
+      <div class="room-layout">
+        <!-- Room Header -->
+        <div class="room-header">
+          <div class="room-header-left">
+            <h2 id="room-title">Room</h2>
+            <div class="room-code-display">
+              <span>Room Code:</span>
+              <span id="room-code-big" class="room-code-value"></span>
+              <button onclick="SpaceGames.copyRoomCode()" class="btn btn-sm btn-ghost" title="Copy code">📋</button>
+            </div>
+          </div>
+          <div class="room-header-right">
+            <span id="room-player-count" class="player-count"></span>
+          </div>
+        </div>
+
+        <div class="room-body">
+          <!-- Left: Players & Games -->
+          <div class="room-main">
+            <!-- Players -->
+            <div class="card">
+              <h3 class="card-title">👥 Players</h3>
+              <div id="room-players" class="player-list"></div>
+            </div>
+
+            <!-- Games (admin only) -->
+            <div class="card" id="room-games-section">
+              <h3 class="card-title">🎮 Start a Game</h3>
+              <div id="room-games-grid" class="mini-games-grid"></div>
+            </div>
+
+            <!-- Voting & Tournament (admin) -->
+            <div class="card" id="room-special-section">
+              <h3 class="card-title">🏟️ Events</h3>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button onclick="SpaceGames.createVote()" class="btn btn-secondary btn-sm" id="btn-create-vote">📊 Start Vote</button>
+                <button onclick="SpaceGames.showTournamentSetup()" class="btn btn-secondary btn-sm" id="btn-start-tournament">🏆 Tournament</button>
+              </div>
+              <div id="vote-display" style="margin-top:12px;"></div>
+              <div id="tournament-display" style="margin-top:12px;"></div>
+            </div>
+
+            <!-- Debate (admin only) -->
+            <div class="card" id="room-debate-section">
+              <h3 class="card-title">⏱️ Debate Timer</h3>
+              <div id="debate-controls"></div>
+            </div>
+          </div>
+
+          <!-- Right: Chat -->
+          <div class="room-sidebar">
+            <div class="card chat-card">
+              <h3 class="card-title">💬 Chat</h3>
+              <div id="chat-messages" class="chat-messages"></div>
+              <div class="chat-input-row">
+                <input type="text" id="chat-input" placeholder="Type a message..." maxlength="200" onkeydown="if(event.key==='Enter')SpaceGames.sendChat()">
+                <button onclick="SpaceGames.sendChat()" class="btn btn-primary btn-sm">Send</button>
+              </div>
+              <div class="reaction-bar">
+                <button onclick="SpaceGames.sendReaction('🔥')" class="reaction-btn">🔥</button>
+                <button onclick="SpaceGames.sendReaction('😂')" class="reaction-btn">😂</button>
+                <button onclick="SpaceGames.sendReaction('👏')" class="reaction-btn">👏</button>
+                <button onclick="SpaceGames.sendReaction('😮')" class="reaction-btn">😮</button>
+                <button onclick="SpaceGames.sendReaction('💀')" class="reaction-btn">💀</button>
+                <button onclick="SpaceGames.sendReaction('❤️')" class="reaction-btn">❤️</button>
+                <button onclick="SpaceGames.sendReaction('🏆')" class="reaction-btn">🏆</button>
+                <button onclick="SpaceGames.sendReaction('👀')" class="reaction-btn">👀</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── GAME PAGE ─── -->
+    <section id="page-game" class="page">
+      <div class="game-layout">
+        <div class="game-header-bar">
+          <button onclick="SpaceGames.backToRoom()" class="btn btn-ghost btn-sm">← Back to Room</button>
+          <div id="game-title" class="game-title-text"></div>
+          <div id="game-timer-display" class="game-timer" style="display:none">
+            <span class="timer-icon">⏱️</span>
+            <span id="game-timer-value">0</span>s
+          </div>
+          <button onclick="SpaceGames.endCurrentGame()" class="btn btn-danger btn-sm" id="btn-end-game" style="display:none">End Game</button>
+        </div>
+        <div id="game-container" class="game-container"></div>
+        <div id="game-spectator-bar" class="spectator-bar" style="display:none">
+          <span>👁️ You are spectating</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── DEBATE PAGE ─── -->
+    <section id="page-debate" class="page">
+      <div class="debate-layout">
+        <div class="debate-header">
+          <button onclick="SpaceGames.backToRoom()" class="btn btn-ghost btn-sm">← Back to Room</button>
+          <h2 id="debate-topic">Debate</h2>
+        </div>
+        <div class="debate-body">
+          <div class="debate-main">
+            <div id="debate-participants" class="debate-participants"></div>
+            <div id="debate-dashboard" class="debate-dashboard"></div>
+          </div>
+          <div class="debate-sidebar">
+            <div class="card" id="debate-admin-controls" style="display:none">
+              <h3 class="card-title">🎛️ Controls</h3>
+              <div id="debate-admin-panel"></div>
+            </div>
+            <div class="card">
+              <h3 class="card-title">📊 Statistics</h3>
+              <div id="debate-stats"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── LEADERBOARD PAGE ─── -->
+    <section id="page-leaderboard" class="page">
+      <div class="leaderboard-layout">
+        <h2 class="section-title">🏆 Global Leaderboard</h2>
+        <div class="leaderboard-filters">
+          <button onclick="SpaceGames.loadLeaderboard('all')" class="btn btn-sm filter-btn active" data-filter="all">All Games</button>
+          <button onclick="SpaceGames.loadLeaderboard('tictactoe')" class="btn btn-sm filter-btn" data-filter="tictactoe">Tic Tac Toe</button>
+          <button onclick="SpaceGames.loadLeaderboard('connect4')" class="btn btn-sm filter-btn" data-filter="connect4">Connect 4</button>
+          <button onclick="SpaceGames.loadLeaderboard('chess')" class="btn btn-sm filter-btn" data-filter="chess">Chess</button>
+          <button onclick="SpaceGames.loadLeaderboard('rps')" class="btn btn-sm filter-btn" data-filter="rps">RPS</button>
+          <button onclick="SpaceGames.loadLeaderboard('trivia')" class="btn btn-sm filter-btn" data-filter="trivia">Trivia</button>
+          <button onclick="SpaceGames.loadLeaderboard('wordscramble')" class="btn btn-sm filter-btn" data-filter="wordscramble">Word Scramble</button>
+          <button onclick="SpaceGames.loadLeaderboard('emojiguess')" class="btn btn-sm filter-btn" data-filter="emojiguess">Emoji Guess</button>
+          <button onclick="SpaceGames.loadLeaderboard('hangman')" class="btn btn-sm filter-btn" data-filter="hangman">Hangman</button>
+          <button onclick="SpaceGames.loadLeaderboard('fastmath')" class="btn btn-sm filter-btn" data-filter="fastmath">Fast Math</button>
+        </div>
+        <div id="leaderboard-content" class="leaderboard-content">
+          <div class="empty-state">Loading...</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══ MODAL ═══ -->
+  <div id="modal-overlay" class="modal-overlay" onclick="SpaceGames.closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modal-title"></h3>
+        <button onclick="SpaceGames.closeModal()" class="modal-close">&times;</button>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══ GAME OVER OVERLAY ═══ -->
+  <div id="game-over-overlay" class="game-over-overlay" style="display:none">
+    <div class="game-over-content">
+      <div id="game-over-icon" class="game-over-icon"></div>
+      <h2 id="game-over-title"></h2>
+      <p id="game-over-detail"></p>
+      <div id="game-over-scores"></div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button onclick="SpaceGames.requestRematch()" class="btn btn-accent btn-lg" id="btn-rematch" style="display:none">🔄 Rematch</button>
+        <button onclick="SpaceGames.dismissGameOver()" class="btn btn-primary btn-lg">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONFETTI CANVAS ═══ -->
+  <canvas id="confetti-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:9999;"></canvas>
+
+  <!-- ═══ ACHIEVEMENT TOAST ═══ -->
+  <div id="achievement-container" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:8000;pointer-events:none;"></div>
+
+  <!-- ═══ SCRIPTS ═══ -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/games/tictactoe.js"></script>
+  <script src="/js/games/connect4.js"></script>
+  <script src="/js/games/chess.js"></script>
+  <script src="/js/games/rps.js"></script>
+  <script src="/js/games/trivia.js"></script>
+  <script src="/js/games/wordscramble.js"></script>
+  <script src="/js/games/emojiguess.js"></script>
+  <script src="/js/games/hangman.js"></script>
+  <script src="/js/games/fastmath.js"></script>
+</body>
+</html>
