@@ -989,10 +989,15 @@ window.SpaceGames = (() => {
   }
 
   let _qpGameType = null;
+  let _qpName = '';
   function quickPlayPick(gameType) {
     _qpGameType = gameType;
-    const name = document.getElementById('qp-name')?.value?.trim();
+    const nameEl = document.getElementById('qp-name');
+    const name = nameEl ? nameEl.value.trim() : '';
     if (!name) return toast(t('modal_name_req'), 'error');
+    _qpName = name; // Save name BEFORE replacing modal
+    playerName = name;
+    localStorage.setItem('sg_playerName', name);
     // Show difficulty picker
     document.getElementById('modal-body').innerHTML = `
       <p style="text-align:center;font-size:1rem;margin-bottom:16px;">${getGameInfo()[gameType].icon} ${getGameInfo()[gameType].name}</p>
@@ -1005,11 +1010,8 @@ window.SpaceGames = (() => {
   }
 
   function quickPlayStart(difficulty) {
-    const nameEl = document.getElementById('qp-name');
-    const name = nameEl ? nameEl.value.trim() : playerName;
+    const name = _qpName || playerName;
     if (!name) return toast(t('modal_name_req'), 'error');
-    playerName = name;
-    localStorage.setItem('sg_playerName', name);
     closeModal();
 
     // 1. Create room
