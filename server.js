@@ -14,7 +14,9 @@ app.use(express.json());
 // ═══════════════════════════════════════
 // DATA PERSISTENCE
 // ═══════════════════════════════════════
-const DATA_FILE = path.join(__dirname, 'data', 'leaderboard.json');
+const DATA_DIR = path.join(__dirname, 'data');
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+const DATA_FILE = path.join(DATA_DIR, 'leaderboard.json');
 
 function loadLeaderboard() {
   try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8')); }
