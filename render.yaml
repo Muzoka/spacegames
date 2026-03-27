@@ -1,0 +1,13 @@
+services:
+  - type: web
+    runtime: node
+    name: spacegames
+    repo: https://github.com/Muzoka/spacegames
+    branch: master
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
