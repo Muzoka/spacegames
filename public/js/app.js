@@ -488,7 +488,7 @@ window.SpaceGames = (() => {
     if (!currentRoom) return;
     const r = currentRoom;
 
-    document.getElementById('room-title').textContent = isAdmin ? 'Your Room' : 'Room';
+    document.getElementById('room-title').textContent = t('room_title');
     document.getElementById('room-code-big').textContent = r.code;
     document.getElementById('room-player-count').textContent = `${r.players.length} ${t('players_label')}`;
 
@@ -566,7 +566,7 @@ window.SpaceGames = (() => {
         `;
       } else {
         document.getElementById('debate-controls').innerHTML = `
-          <button class="btn btn-accent" onclick="SpaceGames.showCreateDebate()">Create Debate</button>
+          <button class="btn btn-accent" onclick="SpaceGames.showCreateDebate()">${t('debate_create')}</button>
         `;
       }
     } else {
