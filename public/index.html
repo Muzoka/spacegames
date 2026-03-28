@@ -12,6 +12,17 @@
   <meta name="theme-color" content="#7c3aed">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="SpaceGames - ساحة الألعاب">
+  <meta property="og:description" content="Play games in real-time with your X Space audience. 9 games, tournaments, debates & more!">
+  <meta property="og:image" content="/og-image.svg">
+  <meta property="og:url" content="">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SpaceGames - ساحة الألعاب">
+  <meta name="twitter:description" content="Play games in real-time with your X Space audience. 9 games, tournaments, debates & more!">
+  <meta name="twitter:image" content="/og-image.svg">
 </head>
 <body>
   <nav id="main-nav">
@@ -88,6 +99,7 @@
               <span data-i18n="room_code_label">رمز الغرفة:</span>
               <span id="room-code-big" class="room-code-value"></span>
               <button onclick="SpaceGames.copyRoomCode()" class="btn btn-sm btn-ghost">📋</button>
+              <button onclick="SpaceGames.shareRoomToX()" class="btn btn-sm btn-ghost" title="Invite via X" style="margin-inline-start:4px;">𝕏</button>
             </div>
           </div>
           <div class="room-header-right"><span id="room-player-count" class="player-count"></span></div>

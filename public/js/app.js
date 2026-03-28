@@ -1104,24 +1104,55 @@ window.SpaceGames = (() => {
 
   // ─── Share to X ───
   let _lastGameResult = null;
+  const GAME_EMOJIS = {
+    tictactoe: '❌⭕', connect4: '🔴🟡', chess: '♟️', rps: '🪨📄✂️',
+    trivia: '🧠', wordscramble: '🔤', emojiguess: '😎', hangman: '🪢', fastmath: '⚡'
+  };
+
+  function _getShareUrl() {
+    if (currentRoom) return location.origin + '/share/room/' + currentRoom.code;
+    return location.origin;
+  }
+
   function shareToX() {
     if (!_lastGameResult) return;
     const d = _lastGameResult;
     const gi = getGameInfo();
     const gn = gi[d.gameType]?.name || d.gameType;
+    const emoji = GAME_EMOJIS[d.gameType] || '🎮';
+    const url = _getShareUrl();
     let txt;
     if (d.winner === playerId) {
       const sc = d.scores ? d.scores[playerId] : null;
-      txt = lang === 'ar'
-        ? `🏆 فزت في ${gn}${sc !== null ? ' بنتيجة ' + sc : ''}! العب معي على SpaceGames 🎮`
-        : `🏆 I won ${gn}${sc !== null ? ' with ' + sc + ' pts' : ''}! Play with me on SpaceGames 🎮`;
+      if (lang === 'ar') {
+        txt = `🏆 فزت في ${gn}${sc !== null ? ' بنتيجة ' + sc : ''}!\n\nانضم للغرفة وتحداني ${emoji}`;
+      } else {
+        txt = `🏆 I just won ${gn}${sc !== null ? ' with ' + sc + ' pts' : ''}!\n\nJoin my room and try to beat me ${emoji}`;
+      }
     } else if (d.draw) {
-      txt = lang === 'ar' ? `🤝 تعادلت في ${gn}! جرب تهزمني 🎮` : `🤝 I tied in ${gn}! Try to beat me 🎮`;
+      txt = lang === 'ar'
+        ? `🤝 تعادلت في ${gn}! مين يقدر يهزمني؟ ${emoji}`
+        : `🤝 Drew in ${gn}! Who can beat me? ${emoji}`;
     } else {
-      txt = lang === 'ar' ? `🎮 لعبت ${gn} على SpaceGames! انضم وتحداني` : `🎮 Just played ${gn} on SpaceGames! Join and challenge me`;
+      txt = lang === 'ar'
+        ? `${emoji} خسرت في ${gn}... مين ينتقم لي؟ 😤`
+        : `${emoji} Lost at ${gn}... who's gonna avenge me? 😤`;
     }
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(txt + '\n' + location.origin)}`;
-    window.open(url, '_blank', 'width=550,height=420');
+    txt += '\n\n' + url + '\n#SpaceGames #XSpaces';
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`, '_blank', 'width=550,height=450');
+  }
+
+  function shareRoomToX() {
+    if (!currentRoom) return;
+    const url = _getShareUrl();
+    const playerCount = currentRoom.players ? currentRoom.players.length : 0;
+    let txt;
+    if (lang === 'ar') {
+      txt = `🎮 انضموا لغرفتي على SpaceGames!\n\n${playerCount} لاعب الآن — ٩ ألعاب جماعية في الوقت الحقيقي\n\n${url}\n#SpaceGames #XSpaces`;
+    } else {
+      txt = `🎮 Join my SpaceGames room!\n\n${playerCount} player${playerCount !== 1 ? 's' : ''} right now — 9 multiplayer games in real-time\n\n${url}\n#SpaceGames #XSpaces`;
+    }
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`, '_blank', 'width=550,height=450');
   }
 
   // ─── Daily Challenge ───
@@ -1534,7 +1565,7 @@ window.SpaceGames = (() => {
     addBot, removeBot, removeAllBots,
     showQuickPlay, quickPlayPick, quickPlayStart,
     showThemePicker, setTheme, showPlayerProfile, showTitlePicker, selectTitle,
-    shareToX, confirmStartGame, dismissWelcome,
+    shareToX, shareRoomToX, confirmStartGame, dismissWelcome,
     requestRematch, createVote, castVote,
     showTournamentSetup, startTournament, playTournamentMatch,
     get playerId() { return playerId; },

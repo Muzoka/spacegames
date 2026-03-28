@@ -2045,6 +2045,38 @@ app.get('/api/titles', (req, res) => {
   res.json(TITLE_MAP);
 });
 
+// ═══════════════════════════════════════
+// SHARE / OPEN GRAPH PAGES
+// ═══════════════════════════════════════
+app.get('/share/room/:code', (req, res) => {
+  const code = req.params.code.toUpperCase();
+  const room = rooms.get(code);
+  const playerCount = room ? room.players.size : 0;
+  const gameName = room && room.currentGame ? room.currentGame : null;
+  const title = room
+    ? `Join my SpaceGames room! ${playerCount} player${playerCount !== 1 ? 's' : ''} online`
+    : 'SpaceGames - Play games in your X Space';
+  const desc = room
+    ? `Room ${code} is live${gameName ? ' playing ' + gameName : ''}. Join and play!`
+    : 'Create or join a room to play 9 multiplayer games with your X Space audience.';
+  const siteUrl = `${req.protocol}://${req.get('host')}`;
+  res.send(`<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<meta property="og:type" content="website">
+<meta property="og:title" content="${title}">
+<meta property="og:description" content="${desc}">
+<meta property="og:image" content="${siteUrl}/og-image.svg">
+<meta property="og:url" content="${siteUrl}/share/room/${code}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${title}">
+<meta name="twitter:description" content="${desc}">
+<meta name="twitter:image" content="${siteUrl}/og-image.svg">
+<meta http-equiv="refresh" content="0;url=${siteUrl}/#/room/${code}">
+<title>${title}</title>
+</head><body><p>Redirecting to SpaceGames...</p></body></html>`);
+});
+
 app.get('/api/rooms', (req, res) => {
   const roomList = [];
   for (const [code, room] of rooms) {

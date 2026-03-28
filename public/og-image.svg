@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a12"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7c3aed"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="600" width="1200" height="30" fill="url(#accent)"/>
+  <text x="600" y="220" text-anchor="middle" font-family="sans-serif" font-size="80" font-weight="bold" fill="white">SpaceGames</text>
+  <text x="600" y="300" text-anchor="middle" font-family="sans-serif" font-size="36" fill="#a0a0b8">Games &amp; Tools for X Spaces</text>
+  <text x="600" y="410" text-anchor="middle" font-size="72">🎮 ♟️ 🧠 🏆 ⚡</text>
+  <text x="600" y="520" text-anchor="middle" font-family="sans-serif" font-size="28" fill="#7c3aed">Play free at spacegames.onrender.com</text>
+</svg>
