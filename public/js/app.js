@@ -1503,13 +1503,46 @@ window.SpaceGames = (() => {
     if (!grid) return;
     const gi = getGameInfo();
     grid.innerHTML = Object.entries(gi).map(([id, g]) => `
-      <div class="game-card">
+      <div class="game-card" onclick="SpaceGames.instantPlay('${id}')" style="cursor:pointer">
         <div class="game-icon">${g.icon}</div>
         <h4>${g.name}</h4>
         <p>${g.desc}</p>
         <div class="player-req">${g.min === g.max ? g.min : g.min + '-' + g.max} ${t('players_label')} | ${g.category}</div>
+        <div class="game-card-cta">${t('quick_play')} ▶</div>
       </div>
     `).join('');
+  }
+
+  // ─── Instant Play (1-tap from landing page) ───
+  function instantPlay(gameType) {
+    // Get or generate player name
+    let name = playerName || localStorage.getItem('sg_playerName') || '';
+    if (!name) {
+      // Auto-generate a guest name
+      const guestNum = Math.floor(Math.random() * 9000) + 1000;
+      name = (lang === 'ar' ? 'لاعب' : 'Player') + guestNum;
+    }
+    playerName = name;
+    localStorage.setItem('sg_playerName', name);
+    _qpGameType = gameType;
+    _qpName = name;
+
+    // Create room → add easy bot → start game
+    socket.emit('create-room', { playerName: name }, (res) => {
+      if (res.error) return toast(res.error, 'error');
+      playerId = res.playerId;
+      currentRoom = res.room;
+      isAdmin = true;
+      if (res.profile) { playerProfile = res.profile; playerAvatar = res.profile.avatar; playerLevel = res.profile.level; }
+
+      socket.emit('add-bot', { difficulty: 'easy' });
+      socket.once('room-update', () => {
+        socket.emit('start-game', { gameType });
+      });
+
+      enterRoom();
+      playSound('join');
+    });
   }
 
   // ─── Modal ───
@@ -1563,7 +1596,7 @@ window.SpaceGames = (() => {
     loadLeaderboard, closeModal, toast,
     toggleSound, toggleLang, t, showAvatarPicker, pickAvatar, kickPlayer,
     addBot, removeBot, removeAllBots,
-    showQuickPlay, quickPlayPick, quickPlayStart,
+    showQuickPlay, quickPlayPick, quickPlayStart, instantPlay,
     showThemePicker, setTheme, showPlayerProfile, showTitlePicker, selectTitle,
     shareToX, shareRoomToX, confirmStartGame, dismissWelcome,
     requestRematch, createVote, castVote,
