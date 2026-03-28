@@ -646,156 +646,218 @@ input::placeholder { color: var(--text-dim); }
 .chess-move-white, .chess-move-black { margin-inline-end: 12px; }
 
 /* Game-specific: RPS */
+/* RPS — premium */
 .rps-arena { text-align: center; width: 100%; max-width: 500px; }
 .rps-choices {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   justify-content: center;
   margin: 30px 0;
 }
 .rps-choice {
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
+  font-size: 3.2rem;
   background: var(--surface-2);
   border: 3px solid var(--border);
   border-radius: 50%;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.2s ease;
   user-select: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
-.rps-choice:hover { border-color: var(--primary); transform: scale(1.1); }
-.rps-choice.selected { border-color: var(--success); background: rgba(16, 185, 129, 0.15); transform: scale(1.15); }
-.rps-choice.disabled { opacity: 0.3; pointer-events: none; }
-.rps-vs { display: flex; align-items: center; justify-content: center; gap: 30px; margin: 20px 0; }
+.rps-choice:hover { border-color: var(--primary); transform: scale(1.12); box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3); }
+.rps-choice.selected { border-color: var(--success); background: rgba(16, 185, 129, 0.15); transform: scale(1.18); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+.rps-choice.disabled { opacity: 0.25; pointer-events: none; transform: scale(0.9); }
+.rps-vs { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 24px 0; }
 .rps-player-card {
   text-align: center;
-  padding: 20px;
+  padding: 24px;
   background: var(--surface);
-  border-radius: var(--radius);
-  min-width: 150px;
+  border-radius: 16px;
+  min-width: 140px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--border);
 }
-.rps-player-choice { font-size: 4rem; margin: 10px 0; }
+.rps-player-choice { font-size: 4.5rem; margin: 12px 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
 .rps-result {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  padding: 12px;
-  border-radius: var(--radius-sm);
+  padding: 14px 24px;
+  border-radius: 12px;
   margin: 16px 0;
   animation: fadeInUp 0.3s ease;
 }
-.rps-result.win { color: var(--success); }
-.rps-result.lose { color: var(--danger); }
-.rps-result.draw { color: var(--accent); }
+.rps-result.win { color: var(--success); background: rgba(16, 185, 129, 0.1); }
+.rps-result.lose { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+.rps-result.draw { color: var(--accent); background: rgba(245, 158, 11, 0.1); }
 .rps-score-display {
   display: flex;
   justify-content: center;
   gap: 40px;
   margin: 16px 0;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 700;
 }
 
-/* Game-specific: Trivia */
-.trivia-container { text-align: center; width: 100%; max-width: 600px; }
-.trivia-progress { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; }
+/* Trivia — Kahoot-style premium */
+.trivia-container { text-align: center; width: 100%; max-width: 620px; }
+.trivia-progress { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
 .trivia-category {
   display: inline-block;
-  background: var(--surface-2);
-  padding: 4px 14px;
+  background: rgba(6, 182, 212, 0.15);
+  padding: 5px 16px;
   border-radius: 20px;
   font-size: 0.8rem;
   color: var(--secondary);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  font-weight: 600;
 }
 .trivia-question {
-  font-size: 1.3rem;
-  font-weight: 600;
-  padding: 24px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  padding: 28px 24px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: none;
+  border-radius: 16px;
   margin-bottom: 20px;
   line-height: 1.5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
-.trivia-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.trivia-options { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .trivia-option {
-  padding: 16px;
-  background: var(--surface-2);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
+  padding: 18px 16px;
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 1rem;
-  transition: var(--transition);
-  text-align: left;
-  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-align: center;
+  color: white;
   font-family: var(--font);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+  position: relative;
 }
-.trivia-option:hover:not(.disabled) { border-color: var(--primary); background: var(--surface-3); }
-.trivia-option.selected { border-color: var(--primary); background: rgba(124, 58, 237, 0.2); }
-.trivia-option.correct { border-color: var(--success); background: rgba(16, 185, 129, 0.2); }
-.trivia-option.wrong { border-color: var(--danger); background: rgba(239, 68, 68, 0.2); }
-.trivia-option.disabled { cursor: default; opacity: 0.7; }
+.trivia-option:nth-child(1) { background: #e21b3c; }
+.trivia-option:nth-child(2) { background: #1368ce; }
+.trivia-option:nth-child(3) { background: #d89e00; }
+.trivia-option:nth-child(4) { background: #26890c; }
+.trivia-option:hover:not(.disabled) { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2); }
+.trivia-option:active:not(.disabled) { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2); }
+.trivia-option.selected { transform: scale(0.97); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2), inset 0 0 0 3px rgba(255, 255, 255, 0.5); }
+.trivia-option.correct { background: #26890c !important; box-shadow: 0 0 20px rgba(38, 137, 12, 0.5); }
+.trivia-option.wrong { background: #e21b3c !important; opacity: 0.6; }
+.trivia-option.disabled { cursor: default; }
+.trivia-option.disabled:not(.selected):not(.correct):not(.wrong) { opacity: 0.5; }
+.trivia-option-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.85rem;
+  margin-inline-end: 8px;
+  vertical-align: middle;
+}
 .trivia-scores {
-  margin-top: 20px;
+  margin-top: 16px;
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 .trivia-score-card {
   background: var(--surface-2);
   padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   font-size: 0.85rem;
+  border: 1px solid var(--border);
 }
+.trivia-score-card.me { border-color: var(--primary); }
 .trivia-score-card .score-val { font-weight: 700; color: var(--accent); }
+.trivia-reveal-info { margin-top: 16px; }
+.trivia-reveal-row { display: flex; justify-content: space-between; padding: 6px 12px; background: var(--surface); border-radius: 8px; margin-bottom: 4px; font-size: 0.85rem; }
+.trivia-reveal-answer.correct { color: var(--success); font-weight: 700; }
+.trivia-reveal-answer.wrong { color: var(--danger); }
 
-/* Game-specific: Word Scramble */
+/* Word Scramble — letter tiles */
 .ws-container { text-align: center; width: 100%; max-width: 500px; }
 .ws-progress { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; }
 .ws-scrambled {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 800;
-  letter-spacing: 8px;
-  padding: 30px;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
+  letter-spacing: 12px;
+  padding: 32px 24px;
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: none;
+  border-radius: 16px;
   margin-bottom: 16px;
   font-family: var(--font-mono);
   color: var(--primary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
 }
-.ws-hint { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; }
+.ws-hint { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; font-style: italic; }
 .ws-input-row { display: flex; gap: 10px; margin-bottom: 16px; }
-.ws-input-row input { flex: 1; text-align: center; font-size: 1.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; }
+.ws-input-row input {
+  flex: 1;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  padding: 14px;
+  background: var(--surface);
+  transition: border-color 0.2s;
+}
+.ws-input-row input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 12px rgba(124, 58, 237, 0.2); }
 
-/* Game-specific: Emoji Guess */
+/* Emoji Guess — fun & bold */
 .eg-container { text-align: center; width: 100%; max-width: 500px; }
 .eg-emojis {
-  font-size: 4rem;
-  padding: 30px;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 12px;
-  letter-spacing: 10px;
+  font-size: 4.5rem;
+  padding: 36px 24px;
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: none;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  letter-spacing: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  line-height: 1.4;
 }
-.eg-hint { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
+.eg-hint { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
 .eg-category {
   display: inline-block;
-  background: var(--surface-2);
-  padding: 4px 14px;
+  background: rgba(245, 158, 11, 0.15);
+  padding: 5px 16px;
   border-radius: 20px;
   font-size: 0.8rem;
   color: var(--accent);
   margin-bottom: 20px;
+  font-weight: 600;
 }
 .eg-input-row { display: flex; gap: 10px; margin-bottom: 16px; }
-.eg-input-row input { flex: 1; text-align: center; font-size: 1.1rem; }
+.eg-input-row input {
+  flex: 1;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  padding: 14px;
+  background: var(--surface);
+  transition: border-color 0.2s;
+}
+.eg-input-row input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 12px rgba(245, 158, 11, 0.2); }
 
 /* Player status for games */
 .game-players-bar {
@@ -1159,19 +1221,11 @@ input::placeholder { color: var(--text-dim); }
 
 /* Game cards: bigger touch targets on mobile */
 .trivia-option { min-height: 56px; font-size: 1.05rem; }
-.rps-choice { min-width: 80px; min-height: 80px; }
+.rps-choice { min-width: 90px; min-height: 90px; }
 .hm-letter-btn { min-width: 42px; min-height: 42px; }
 
 /* Kahoot-style big colorful buttons for trivia */
-.trivia-option:nth-child(1) { border-left: 4px solid var(--danger); }
-.trivia-option:nth-child(2) { border-left: 4px solid var(--secondary); }
-.trivia-option:nth-child(3) { border-left: 4px solid var(--accent); }
-.trivia-option:nth-child(4) { border-left: 4px solid var(--success); }
-[dir="rtl"] .trivia-option { border-left: none; }
-[dir="rtl"] .trivia-option:nth-child(1) { border-right: 4px solid var(--danger); }
-[dir="rtl"] .trivia-option:nth-child(2) { border-right: 4px solid var(--secondary); }
-[dir="rtl"] .trivia-option:nth-child(3) { border-right: 4px solid var(--accent); }
-[dir="rtl"] .trivia-option:nth-child(4) { border-right: 4px solid var(--success); }
+/* Trivia Kahoot colors are set via nth-child backgrounds in main CSS */
 
 @media (max-width: 768px) {
   .hero-title { font-size: 2.5rem; }
@@ -1467,94 +1521,112 @@ input::placeholder { color: var(--text-dim); }
 }
 
 /* ─── Fast Math ─── */
+/* Fast Math — calculator-style */
 .fm-container { text-align: center; width: 100%; max-width: 500px; }
 .fm-problem {
-  font-size: 3rem;
+  font-size: 3.2rem;
   font-weight: 800;
   font-family: var(--font-mono);
-  padding: 30px;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
+  padding: 36px 24px;
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: none;
+  border-radius: 16px;
   margin-bottom: 16px;
-  color: var(--primary);
+  color: var(--text);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  letter-spacing: 2px;
 }
-.fm-problem .fm-op { color: var(--accent); }
+.fm-problem .fm-op { color: var(--accent); font-weight: 900; }
 .fm-problem .fm-eq { color: var(--text-dim); }
 .fm-difficulty {
   display: inline-block;
-  padding: 3px 12px;
-  border-radius: 12px;
+  padding: 5px 16px;
+  border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
   margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
-.fm-difficulty.easy { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-.fm-difficulty.medium { background: rgba(245, 158, 11, 0.2); color: var(--accent); }
-.fm-difficulty.hard { background: rgba(249, 115, 22, 0.2); color: #f97316; }
-.fm-difficulty.challenge { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+.fm-difficulty.easy { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+.fm-difficulty.medium { background: rgba(245, 158, 11, 0.15); color: var(--accent); }
+.fm-difficulty.hard { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.fm-difficulty.challenge { background: rgba(239, 68, 68, 0.15); color: var(--danger); animation: challengePulse 1s ease infinite alternate; }
+@keyframes challengePulse { from { opacity: 1; } to { opacity: 0.6; } }
 .fm-input-row { display: flex; gap: 10px; margin-bottom: 16px; }
 .fm-input-row input {
   flex: 1;
   text-align: center;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  font-weight: 800;
   font-family: var(--font-mono);
-  letter-spacing: 2px;
+  letter-spacing: 3px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  padding: 14px;
+  background: var(--surface);
+  transition: border-color 0.2s;
 }
+.fm-input-row input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 12px rgba(245, 158, 11, 0.2); }
 
-/* ─── Hangman ─── */
+/* Hangman — clean & bold */
 .hm-container { text-align: center; width: 100%; max-width: 550px; }
 .hm-figure {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   line-height: 1.3;
-  padding: 16px 24px;
+  padding: 20px 28px;
   background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
+  border: none;
+  border-radius: 16px;
   margin-bottom: 16px;
   white-space: pre;
   color: var(--danger);
   display: inline-block;
   min-width: 160px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .hm-word {
-  font-size: 2.2rem;
+  font-size: 2.4rem;
   font-weight: 800;
-  letter-spacing: 12px;
+  letter-spacing: 14px;
   padding: 16px;
   font-family: var(--font-mono);
   color: var(--text);
   margin-bottom: 12px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 .hm-letters {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 7px;
   justify-content: center;
   margin: 16px 0;
+  max-width: 420px;
+  margin-inline: auto;
 }
 .hm-letter-btn {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
   background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  border-radius: 10px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.15s;
   color: var(--text);
   font-family: var(--font);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
 }
-.hm-letter-btn:hover:not(:disabled) { border-color: var(--primary); background: var(--surface-3); }
-.hm-letter-btn:disabled { opacity: 0.3; cursor: default; }
-.hm-letter-btn.correct { background: rgba(16, 185, 129, 0.2); border-color: var(--success); color: var(--success); }
-.hm-letter-btn.wrong { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: var(--danger); text-decoration: line-through; }
+.hm-letter-btn:hover:not(:disabled) { border-color: var(--primary); background: var(--surface-3); transform: translateY(-1px); box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2); }
+.hm-letter-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 0 0 rgba(0, 0, 0, 0.2); }
+.hm-letter-btn:disabled { opacity: 0.2; cursor: default; box-shadow: none; }
+.hm-letter-btn.correct { background: rgba(16, 185, 129, 0.2); border-color: var(--success); color: var(--success); box-shadow: 0 0 8px rgba(16, 185, 129, 0.2); }
+.hm-letter-btn.wrong { background: rgba(239, 68, 68, 0.15); border-color: var(--danger); color: var(--danger); text-decoration: line-through; opacity: 0.4; }
 
 /* ─── Quick Play ─── */
 .btn-xl { padding: 18px 40px; font-size: 1.2rem; }
