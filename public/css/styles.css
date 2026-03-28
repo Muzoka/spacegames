@@ -505,6 +505,16 @@ input::placeholder { color: var(--text-dim); }
 .c4-col-btn:hover { background: var(--primary); color: white; }
 
 /* Game-specific: Chess (Chessground) */
+/* Override board to classic green/cream (chess.com style) */
+.cg-wrap square.white { background-color: #eeeed2 !important; }
+.cg-wrap square.black { background-color: #769656 !important; }
+.cg-wrap square.last-move.white { background-color: #f6f669 !important; }
+.cg-wrap square.last-move.black { background-color: #baca2b !important; }
+.cg-wrap square.selected.white { background-color: #829769 !important; }
+.cg-wrap square.selected.black { background-color: #646f40 !important; }
+.cg-wrap square.check { background: radial-gradient(ellipse at center, rgba(255,0,0,1) 0%, rgba(231,0,0,0.6) 25%, rgba(169,0,0,0) 89%) !important; }
+.cg-wrap coords { color: rgba(0,0,0,0.3); font-weight: 700; }
+
 .chess-game {
   display: flex;
   flex-direction: column;
