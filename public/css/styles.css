@@ -1584,7 +1584,12 @@ input::placeholder { color: var(--text-dim); }
 .fm-input-row input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 12px rgba(245, 158, 11, 0.2); }
 
 /* Hangman — clean & bold */
-.hm-container { text-align: center; width: 100%; max-width: 550px; }
+.hm-container { text-align: center; width: 100%; max-width: 550px; margin: 0 auto; padding: 16px; }
+.hm-progress { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 1px; text-transform: uppercase; }
+.hm-hint { font-size: 0.9rem; color: #a78bfa; margin-bottom: 12px; font-style: italic; }
+.hm-message { font-size: 1rem; margin-bottom: 16px; min-height: 24px; font-weight: 700; }
+.hm-scores { margin-top: 16px; }
+.hm-figure.dead { color: #f87171 !important; border-color: var(--danger) !important; }
 .hm-figure {
   font-family: var(--font-mono);
   font-size: 1.2rem;
