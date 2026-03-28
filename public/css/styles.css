@@ -260,17 +260,27 @@ input::placeholder { color: var(--text-dim); }
 .game-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 16px;
   padding: 24px 20px;
   text-align: center;
-  cursor: default;
-  transition: var(--transition);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
-.game-card:hover { border-color: var(--secondary); transform: translateY(-2px); }
+.game-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.2); }
+.game-card:hover .game-card-cta { opacity: 1; transform: translateY(0); }
 .game-card .game-icon { font-size: 2.5rem; margin-bottom: 10px; }
 .game-card h4 { font-size: 1rem; margin-bottom: 6px; }
 .game-card p { font-size: 0.8rem; color: var(--text-muted); }
 .game-card .player-req { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
+.game-card-cta {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.2s ease;
+}
 
 /* ─── ROOM ─── */
 .room-layout { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
