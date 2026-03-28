@@ -1,65 +1,70 @@
 (function () {
   'use strict';
 
-  // Unicode piece map
-  var PIECE_UNICODE = {
+  // Piece unicode for captured pieces display
+  var PIECE_CHAR = {
     wk: '\u2654', wq: '\u2655', wr: '\u2656', wb: '\u2657', wn: '\u2658', wp: '\u2659',
     bk: '\u265A', bq: '\u265B', br: '\u265C', bb: '\u265D', bn: '\u265E', bp: '\u265F'
   };
 
-  // Column labels
   var COL_LABELS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
-  // ---- Move validation helpers ----
+  // ═══════════════════════════════════════
+  // BOARD STATE CONVERTERS
+  // ═══════════════════════════════════════
 
-  function inBounds(r, c) {
-    return r >= 0 && r < 8 && c >= 0 && c < 8;
+  // Convert SpaceGames board (2D array) to FEN piece placement
+  function boardToFen(board) {
+    var fen = '';
+    for (var r = 0; r < 8; r++) {
+      var empty = 0;
+      for (var c = 0; c < 8; c++) {
+        var p = board[r][c];
+        if (!p) { empty++; continue; }
+        if (empty > 0) { fen += empty; empty = 0; }
+        var ch = p[1]; // k, q, r, b, n, p
+        fen += p[0] === 'w' ? ch.toUpperCase() : ch;
+      }
+      if (empty > 0) fen += empty;
+      if (r < 7) fen += '/';
+    }
+    return fen;
   }
 
-  function pieceColor(piece) {
-    return piece ? piece[0] : null;
+  // Convert row,col to algebraic (e.g. 0,4 → "e8")
+  function toSquare(r, c) {
+    return COL_LABELS[c] + (8 - r);
   }
 
-  function pieceType(piece) {
-    return piece ? piece[1] : null;
+  // Convert algebraic to row,col
+  function fromSquare(sq) {
+    return { r: 8 - parseInt(sq[1]), c: COL_LABELS.indexOf(sq[0]) };
   }
 
-  function isEnemy(board, r, c, color) {
-    var p = board[r][c];
-    return p !== null && pieceColor(p) !== color;
-  }
+  // ═══════════════════════════════════════
+  // MOVE VALIDATION (needed for legal move hints)
+  // ═══════════════════════════════════════
 
-  function isEmpty(board, r, c) {
-    return board[r][c] === null;
-  }
+  function inBounds(r, c) { return r >= 0 && r < 8 && c >= 0 && c < 8; }
+  function pieceColor(p) { return p ? p[0] : null; }
+  function pieceType(p) { return p ? p[1] : null; }
+  function isEnemy(b, r, c, col) { return b[r][c] !== null && pieceColor(b[r][c]) !== col; }
+  function isEmpty(b, r, c) { return b[r][c] === null; }
 
-  function addIfValid(moves, board, r, c, color) {
+  function addIfValid(moves, b, r, c, col) {
     if (!inBounds(r, c)) return false;
-    if (isEmpty(board, r, c)) {
-      moves.push({ r: r, c: c, capture: false });
-      return true;
-    }
-    if (isEnemy(board, r, c, color)) {
-      moves.push({ r: r, c: c, capture: true });
-    }
-    return false; // blocked
+    if (isEmpty(b, r, c)) { moves.push(toSquare(r, c)); return true; }
+    if (isEnemy(b, r, c, col)) { moves.push(toSquare(r, c)); }
+    return false;
   }
 
-  function slideMoves(moves, board, r, c, color, dirs) {
+  function slideMoves(moves, b, r, c, col, dirs) {
     for (var d = 0; d < dirs.length; d++) {
-      var dr = dirs[d][0], dc = dirs[d][1];
-      var nr = r + dr, nc = c + dc;
+      var nr = r + dirs[d][0], nc = c + dirs[d][1];
       while (inBounds(nr, nc)) {
-        if (isEmpty(board, nr, nc)) {
-          moves.push({ r: nr, c: nc, capture: false });
-        } else {
-          if (isEnemy(board, nr, nc, color)) {
-            moves.push({ r: nr, c: nc, capture: true });
-          }
-          break;
-        }
-        nr += dr;
-        nc += dc;
+        if (isEmpty(b, nr, nc)) { moves.push(toSquare(nr, nc)); }
+        else { if (isEnemy(b, nr, nc, col)) moves.push(toSquare(nr, nc)); break; }
+        nr += dirs[d][0]; nc += dirs[d][1];
       }
     }
   }
@@ -67,428 +72,269 @@
   function getValidMoves(board, r, c, state) {
     var piece = board[r][c];
     if (!piece) return [];
-    var color = pieceColor(piece);
-    var type = pieceType(piece);
-    var moves = [];
-    var nr, nc, d;
+    var color = pieceColor(piece), type = pieceType(piece), moves = [];
 
     switch (type) {
       case 'p': {
-        var dir = color === 'w' ? -1 : 1;
-        var startRow = color === 'w' ? 6 : 1;
-        // Forward one
-        nr = r + dir;
+        var dir = color === 'w' ? -1 : 1, startRow = color === 'w' ? 6 : 1;
+        var nr = r + dir;
         if (inBounds(nr, c) && isEmpty(board, nr, c)) {
-          moves.push({ r: nr, c: c, capture: false });
-          // Forward two from start
-          if (r === startRow) {
-            var nr2 = r + dir * 2;
-            if (isEmpty(board, nr2, c)) {
-              moves.push({ r: nr2, c: c, capture: false });
-            }
-          }
+          moves.push(toSquare(nr, c));
+          if (r === startRow) { var nr2 = r + dir * 2; if (isEmpty(board, nr2, c)) moves.push(toSquare(nr2, c)); }
         }
-        // Diagonal captures
-        var capCols = [c - 1, c + 1];
-        for (d = 0; d < capCols.length; d++) {
-          nc = capCols[d];
+        [c - 1, c + 1].forEach(function (nc) {
           if (inBounds(nr, nc)) {
-            if (isEnemy(board, nr, nc, color)) {
-              moves.push({ r: nr, c: nc, capture: true });
-            }
-            // En passant
-            if (state.enPassant && state.enPassant.r === nr && state.enPassant.c === nc) {
-              moves.push({ r: nr, c: nc, capture: true });
-            }
+            if (isEnemy(board, nr, nc, color)) moves.push(toSquare(nr, nc));
+            if (state.enPassant && state.enPassant.r === nr && state.enPassant.c === nc) moves.push(toSquare(nr, nc));
           }
-        }
+        });
         break;
       }
-      case 'r':
-        slideMoves(moves, board, r, c, color, [[-1, 0], [1, 0], [0, -1], [0, 1]]);
+      case 'r': slideMoves(moves, board, r, c, color, [[-1,0],[1,0],[0,-1],[0,1]]); break;
+      case 'b': slideMoves(moves, board, r, c, color, [[-1,-1],[-1,1],[1,-1],[1,1]]); break;
+      case 'q': slideMoves(moves, board, r, c, color, [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]); break;
+      case 'n':
+        [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(function (m) { addIfValid(moves, board, r + m[0], c + m[1], color); });
         break;
-      case 'b':
-        slideMoves(moves, board, r, c, color, [[-1, -1], [-1, 1], [1, -1], [1, 1]]);
-        break;
-      case 'q':
-        slideMoves(moves, board, r, c, color, [
-          [-1, 0], [1, 0], [0, -1], [0, 1],
-          [-1, -1], [-1, 1], [1, -1], [1, 1]
-        ]);
-        break;
-      case 'n': {
-        var knightMoves = [
-          [-2, -1], [-2, 1], [-1, -2], [-1, 2],
-          [1, -2], [1, 2], [2, -1], [2, 1]
-        ];
-        for (d = 0; d < knightMoves.length; d++) {
-          addIfValid(moves, board, r + knightMoves[d][0], c + knightMoves[d][1], color);
-        }
-        break;
-      }
-      case 'k': {
-        var kingDirs = [
-          [-1, -1], [-1, 0], [-1, 1],
-          [0, -1],           [0, 1],
-          [1, -1],  [1, 0],  [1, 1]
-        ];
-        for (d = 0; d < kingDirs.length; d++) {
-          addIfValid(moves, board, r + kingDirs[d][0], c + kingDirs[d][1], color);
-        }
-        // Castling
+      case 'k':
+        [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(function (m) { addIfValid(moves, board, r + m[0], c + m[1], color); });
         if (state.castling) {
-          var rights = state.castling[color];
-          if (rights) {
-            var row = color === 'w' ? 7 : 0;
-            if (r === row && c === 4) {
-              // Kingside
-              if (rights.k && isEmpty(board, row, 5) && isEmpty(board, row, 6) &&
-                  board[row][7] && board[row][7] === color + 'r') {
-                moves.push({ r: row, c: 6, capture: false, castle: 'k' });
-              }
-              // Queenside
-              if (rights.q && isEmpty(board, row, 3) && isEmpty(board, row, 2) && isEmpty(board, row, 1) &&
-                  board[row][0] && board[row][0] === color + 'r') {
-                moves.push({ r: row, c: 2, capture: false, castle: 'q' });
-              }
-            }
+          var rights = state.castling[color], row = color === 'w' ? 7 : 0;
+          if (rights && r === row && c === 4) {
+            if (rights.k && isEmpty(board, row, 5) && isEmpty(board, row, 6) && board[row][7] === color + 'r')
+              moves.push(toSquare(row, 6));
+            if (rights.q && isEmpty(board, row, 3) && isEmpty(board, row, 2) && isEmpty(board, row, 1) && board[row][0] === color + 'r')
+              moves.push(toSquare(row, 2));
           }
         }
         break;
-      }
     }
     return moves;
   }
 
-  // ---- Notation helper ----
-
-  function moveToNotation(board, fromR, fromC, toR, toC) {
-    var piece = board[fromR][fromC];
-    if (!piece) return '?';
-    var type = pieceType(piece);
-    var isCapture = board[toR][toC] !== null;
-    var dest = COL_LABELS[toC] + (8 - toR);
-    var prefix = '';
-    if (type === 'p') {
-      if (isCapture || fromC !== toC) {
-        prefix = COL_LABELS[fromC] + 'x';
+  // Build Chessground dests map from board state
+  function buildDests(board, color, state) {
+    var dests = new Map();
+    for (var r = 0; r < 8; r++) {
+      for (var c = 0; c < 8; c++) {
+        var piece = board[r][c];
+        if (piece && pieceColor(piece) === color) {
+          var moves = getValidMoves(board, r, c, state);
+          if (moves.length > 0) {
+            dests.set(toSquare(r, c), moves);
+          }
+        }
       }
-      return prefix + dest;
     }
-    if (type === 'k' && Math.abs(toC - fromC) === 2) {
-      return toC > fromC ? 'O-O' : 'O-O-O';
-    }
-    var typeChar = type.toUpperCase();
-    if (typeChar === 'N') typeChar = 'N';
-    else if (typeChar === 'K') typeChar = 'K';
-    return typeChar + (isCapture ? 'x' : '') + dest;
+    return dests;
   }
 
-  // ---- Rendering ----
+  // ═══════════════════════════════════════
+  // HANDLER
+  // ═══════════════════════════════════════
 
   function createHandler() {
-    var _container = null;
-    var _ctx = null;
-    var _state = null;
-    var _selectedCell = null;
-    var _validMoves = [];
-    var _lastMove = null;
-    var _myColor = null;
-    var _flipped = false;
+    var _container = null, _ctx = null, _state = null;
+    var _myColor = null, _flipped = false;
+    var _cg = null; // Chessground instance
+    var _Chessground = null; // Chessground constructor
 
     function getMyColor() {
-      if (!_state || !_state.colors || !_ctx) return null;
-      return _state.colors[_ctx.playerId] || null;
+      return (_state && _state.colors && _ctx) ? (_state.colors[_ctx.playerId] || null) : null;
     }
-
-    function isMyTurn() {
-      if (!_state || !_myColor) return false;
-      var turnColor = _state.turn % 2 === 0 ? 'w' : 'b';
-      return turnColor === _myColor;
-    }
-
-    function currentTurnColor() {
-      if (!_state) return 'w';
-      return _state.turn % 2 === 0 ? 'w' : 'b';
-    }
+    function currentTurnColor() { return _state ? (_state.turn % 2 === 0 ? 'w' : 'b') : 'w'; }
+    function cgColor(c) { return c === 'w' ? 'white' : 'black'; }
 
     function getPlayerName(color) {
       if (!_state || !_state.players) return color === 'w' ? 'White' : 'Black';
       var pid = color === 'w' ? _state.players[0] : _state.players[1];
-      if (!pid) return color === 'w' ? 'White' : 'Black';
-      if (_ctx.players) {
-        for (var i = 0; i < _ctx.players.length; i++) {
-          if (_ctx.players[i].id === pid) return _ctx.players[i].name;
-        }
-      }
-      if (_ctx.gamePlayers) {
-        for (var j = 0; j < _ctx.gamePlayers.length; j++) {
-          if (_ctx.gamePlayers[j].id === pid) return _ctx.gamePlayers[j].name;
-        }
-      }
-      return pid;
+      if (_ctx.players && _ctx.players[pid]) return _ctx.players[pid];
+      return color === 'w' ? 'White' : 'Black';
     }
 
-    function renderPlayerBar() {
+    function getPlayerAvatar(color) {
+      if (!_state || !_state.players) return '😎';
+      var pid = color === 'w' ? _state.players[0] : _state.players[1];
+      if (typeof SpaceGames !== 'undefined' && SpaceGames.currentRoom) {
+        var players = SpaceGames.currentRoom.players;
+        if (players) {
+          for (var i = 0; i < players.length; i++) {
+            if (players[i].id === pid) return players[i].avatar || '😎';
+          }
+        }
+      }
+      return '😎';
+    }
+
+    function isMyTurn() {
+      return _myColor && currentTurnColor() === _myColor;
+    }
+
+    // ─── Player bar ───
+    function renderPlayerBar(color, position) {
       var bar = document.createElement('div');
-      bar.className = 'game-players-bar';
+      bar.className = 'chess-player-bar ' + position;
+      var active = currentTurnColor() === color;
 
-      var whiteInfo = document.createElement('div');
-      whiteInfo.className = 'game-player-info' + (currentTurnColor() === 'w' ? ' active' : '');
-      whiteInfo.innerHTML = '<span class="chess-piece-icon">\u2654</span> ' + escapeHtml(getPlayerName('w'));
+      var info = document.createElement('div');
+      info.className = 'chess-player-info' + (active ? ' active' : '');
 
-      var vs = document.createElement('span');
-      vs.textContent = ' ' + SpaceGames.t('vs') + ' ';
-      vs.style.margin = '0 12px';
-      vs.style.opacity = '0.5';
+      var dot = document.createElement('span');
+      dot.className = 'chess-turn-dot ' + (active ? 'active' : 'inactive');
+      info.appendChild(dot);
 
-      var blackInfo = document.createElement('div');
-      blackInfo.className = 'game-player-info' + (currentTurnColor() === 'b' ? ' active' : '');
-      blackInfo.innerHTML = '<span class="chess-piece-icon">\u265A</span> ' + escapeHtml(getPlayerName('b'));
+      var avatar = document.createElement('span');
+      avatar.textContent = getPlayerAvatar(color);
+      avatar.style.fontSize = '1.2rem';
+      info.appendChild(avatar);
 
-      bar.appendChild(whiteInfo);
-      bar.appendChild(vs);
-      bar.appendChild(blackInfo);
+      var name = document.createElement('span');
+      name.className = 'chess-player-name';
+      name.textContent = getPlayerName(color);
+      info.appendChild(name);
+
+      var captured = document.createElement('div');
+      captured.className = 'chess-captured-pieces';
+      if (_state.captured && _state.captured[color]) {
+        _state.captured[color].forEach(function (p) {
+          var span = document.createElement('span');
+          span.textContent = PIECE_CHAR[p] || '';
+          captured.appendChild(span);
+        });
+      }
+
+      bar.appendChild(info);
+      bar.appendChild(captured);
       return bar;
     }
 
-    function renderTurnIndicator() {
-      var div = document.createElement('div');
-      div.className = 'game-turn-indicator';
-      var turnColor = currentTurnColor();
-      if (isMyTurn()) {
-        div.textContent = SpaceGames.t('your_turn') + ' (' + (turnColor === 'w' ? 'White' : 'Black') + ')';
-      } else if (_myColor) {
-        var oppColorName = turnColor === 'w' ? 'White' : 'Black';
-        div.textContent = SpaceGames.t('waiting_for', {name: oppColorName});
-      } else {
-        var specColorName = turnColor === 'w' ? 'White' : 'Black';
-        div.textContent = SpaceGames.t('waiting_for', {name: specColorName}) + ' - ' + SpaceGames.t('spectating');
-      }
-      return div;
-    }
-
-    function renderCapturedPieces(color) {
-      var div = document.createElement('div');
-      div.className = 'chess-captured';
-      div.style.minHeight = '28px';
-      div.style.fontSize = '20px';
-      div.style.padding = '2px 4px';
-      div.style.display = 'flex';
-      div.style.flexWrap = 'wrap';
-      div.style.gap = '2px';
-      if (_state.captured && _state.captured[color]) {
-        var pieces = _state.captured[color];
-        for (var i = 0; i < pieces.length; i++) {
-          var span = document.createElement('span');
-          span.textContent = PIECE_UNICODE[pieces[i]] || pieces[i];
-          div.appendChild(span);
-        }
-      }
-      return div;
-    }
-
-    function renderBoard() {
-      var board = _state.board;
-      var boardEl = document.createElement('div');
-      boardEl.className = 'chess-board';
-
-      for (var ri = 0; ri < 8; ri++) {
-        for (var ci = 0; ci < 8; ci++) {
-          var r = _flipped ? (7 - ri) : ri;
-          var c = _flipped ? (7 - ci) : ci;
-
-          var cell = document.createElement('div');
-          var isLight = (r + c) % 2 === 0;
-          cell.className = 'chess-cell ' + (isLight ? 'light' : 'dark');
-
-          // Last move highlight
-          if (_lastMove) {
-            if ((r === _lastMove.fromR && c === _lastMove.fromC) ||
-                (r === _lastMove.toR && c === _lastMove.toC)) {
-              cell.classList.add('last-move');
-            }
-          }
-
-          // Selected highlight
-          if (_selectedCell && _selectedCell.r === r && _selectedCell.c === c) {
-            cell.classList.add('selected');
-          }
-
-          // Valid move / capture indicators
-          var isValidTarget = false;
-          var isCaptureTarget = false;
-          for (var m = 0; m < _validMoves.length; m++) {
-            if (_validMoves[m].r === r && _validMoves[m].c === c) {
-              isValidTarget = true;
-              isCaptureTarget = _validMoves[m].capture;
-              break;
-            }
-          }
-          if (isValidTarget) {
-            cell.classList.add(isCaptureTarget ? 'capture-move' : 'valid-move');
-          }
-
-          // Piece
-          var piece = board[r][c];
-          if (piece) {
-            var pieceSpan = document.createElement('span');
-            pieceSpan.className = 'chess-piece';
-            pieceSpan.textContent = PIECE_UNICODE[piece] || piece;
-            cell.appendChild(pieceSpan);
-          }
-
-          // Click handler
-          cell.dataset.row = r;
-          cell.dataset.col = c;
-          cell.addEventListener('click', onCellClick);
-
-          boardEl.appendChild(cell);
-        }
-      }
-      return boardEl;
-    }
-
+    // ─── Move history ───
     function renderMoveHistory() {
       var div = document.createElement('div');
-      div.className = 'chess-move-history';
-      div.style.maxHeight = '120px';
-      div.style.overflowY = 'auto';
-      div.style.fontSize = '13px';
-      div.style.padding = '8px';
-      div.style.marginTop = '8px';
-      div.style.fontFamily = 'monospace';
-      div.style.lineHeight = '1.6';
-
+      div.className = 'chess-move-list';
       if (!_state.moveHistory || _state.moveHistory.length === 0) {
-        div.textContent = 'No moves yet.';
+        div.innerHTML = '<span style="opacity:0.4;font-style:italic">No moves yet</span>';
         return div;
       }
-
-      var text = '';
+      var html = '';
       for (var i = 0; i < _state.moveHistory.length; i += 2) {
-        var moveNum = Math.floor(i / 2) + 1;
-        text += moveNum + '. ' + _state.moveHistory[i];
-        if (i + 1 < _state.moveHistory.length) {
-          text += ' ' + _state.moveHistory[i + 1];
-        }
-        text += '  ';
+        html += '<span class="chess-move-num">' + (Math.floor(i / 2) + 1) + '.</span>';
+        html += '<span class="chess-move-white">' + _state.moveHistory[i] + '</span>';
+        if (i + 1 < _state.moveHistory.length)
+          html += '<span class="chess-move-black">' + _state.moveHistory[i + 1] + '</span>';
       }
-      div.textContent = text;
-      // Scroll to end
+      div.innerHTML = html;
       setTimeout(function () { div.scrollTop = div.scrollHeight; }, 0);
       return div;
     }
 
-    function render() {
+    // ─── Update Chessground ───
+    function updateBoard() {
+      if (!_cg || !_state) return;
+
+      var turnColor = cgColor(currentTurnColor());
+      var myTurn = isMyTurn();
+
+      _cg.set({
+        fen: boardToFen(_state.board),
+        turnColor: turnColor,
+        check: _state.inCheck ? true : false,
+        movable: {
+          free: false,
+          color: myTurn ? cgColor(_myColor) : undefined,
+          dests: myTurn ? buildDests(_state.board, _myColor, _state) : new Map(),
+          showDests: true
+        },
+        lastMove: _state._lastMoveSquares || undefined
+      });
+    }
+
+    // ─── Render wrapper (player bars + move history) ───
+    function renderChrome() {
       if (!_container || !_state) return;
-      _container.innerHTML = '';
 
-      var wrapper = document.createElement('div');
-      wrapper.className = 'chess-game';
-      wrapper.style.display = 'flex';
-      wrapper.style.flexDirection = 'column';
-      wrapper.style.alignItems = 'center';
-      wrapper.style.gap = '8px';
+      // Remove old chrome but keep board
+      _container.querySelectorAll('.chess-player-bar, .chess-move-list').forEach(function (el) { el.remove(); });
 
-      // Player bar
-      wrapper.appendChild(renderPlayerBar());
+      var wrapper = _container.querySelector('.chess-game');
+      if (!wrapper) return;
 
-      // Turn indicator
-      wrapper.appendChild(renderTurnIndicator());
+      var boardWrap = wrapper.querySelector('.chess-board-wrap');
 
-      // Top captured pieces (opponent's captured, or black if not flipped)
+      // Top player bar (opponent)
       var topColor = _flipped ? 'w' : 'b';
-      wrapper.appendChild(renderCapturedPieces(topColor));
-
-      // Board
-      wrapper.appendChild(renderBoard());
-
-      // Bottom captured pieces
       var bottomColor = _flipped ? 'b' : 'w';
-      wrapper.appendChild(renderCapturedPieces(bottomColor));
+
+      var topBar = renderPlayerBar(topColor, 'top');
+      wrapper.insertBefore(topBar, boardWrap);
+
+      var bottomBar = renderPlayerBar(bottomColor, 'bottom');
+      boardWrap.after(bottomBar);
 
       // Move history
+      var oldHistory = wrapper.querySelector('.chess-move-list');
+      if (oldHistory) oldHistory.remove();
       wrapper.appendChild(renderMoveHistory());
+    }
 
+    // ─── Handle player move via Chessground ───
+    function onMove(orig, dest) {
+      var from = fromSquare(orig);
+      var to = fromSquare(dest);
+
+      var moveData = { fromR: from.r, fromC: from.c, toR: to.r, toC: to.c };
+
+      // Check pawn promotion
+      var piece = _state.board[from.r][from.c];
+      if (piece && pieceType(piece) === 'p') {
+        var promoRow = pieceColor(piece) === 'w' ? 0 : 7;
+        if (to.r === promoRow) moveData.promotion = 'q';
+      }
+
+      _ctx.socket.emit('game-move', { move: moveData });
+    }
+
+    // ─── Init Chessground ───
+    function initBoard() {
+      var wrapper = document.createElement('div');
+      wrapper.className = 'chess-game';
+
+      var boardWrap = document.createElement('div');
+      boardWrap.className = 'chess-board-wrap';
+      wrapper.appendChild(boardWrap);
+
+      _container.innerHTML = '';
       _container.appendChild(wrapper);
+
+      var turnColor = cgColor(currentTurnColor());
+      var myTurn = isMyTurn();
+
+      _cg = _Chessground(boardWrap, {
+        fen: boardToFen(_state.board),
+        orientation: _flipped ? 'black' : 'white',
+        turnColor: turnColor,
+        coordinates: true,
+        autoCastle: true,
+        animation: { enabled: true, duration: 200 },
+        draggable: { enabled: true, showGhost: true },
+        movable: {
+          free: false,
+          color: myTurn ? cgColor(_myColor) : undefined,
+          dests: myTurn ? buildDests(_state.board, _myColor, _state) : new Map(),
+          showDests: true,
+          events: { after: onMove }
+        },
+        highlight: { lastMove: true, check: true },
+        premovable: { enabled: false },
+        check: _state.inCheck ? true : false
+      });
+
+      renderChrome();
     }
 
-    function onCellClick(e) {
-      var cell = e.currentTarget;
-      var r = parseInt(cell.dataset.row, 10);
-      var c = parseInt(cell.dataset.col, 10);
-
-      if (!isMyTurn()) return;
-
-      var board = _state.board;
-      var piece = board[r][c];
-
-      // If we have a selected piece, try to move
-      if (_selectedCell) {
-        // Check if clicking a valid destination
-        var targetMove = null;
-        for (var i = 0; i < _validMoves.length; i++) {
-          if (_validMoves[i].r === r && _validMoves[i].c === c) {
-            targetMove = _validMoves[i];
-            break;
-          }
-        }
-
-        if (targetMove) {
-          var moveData = {
-            fromR: _selectedCell.r,
-            fromC: _selectedCell.c,
-            toR: r,
-            toC: c
-          };
-
-          // Pawn promotion
-          var movingPiece = board[_selectedCell.r][_selectedCell.c];
-          if (movingPiece && pieceType(movingPiece) === 'p') {
-            var promoRow = pieceColor(movingPiece) === 'w' ? 0 : 7;
-            if (r === promoRow) {
-              moveData.promotion = 'q'; // Auto-promote to queen
-            }
-          }
-
-          _ctx.socket.emit('game-move', { move: moveData });
-          _selectedCell = null;
-          _validMoves = [];
-          render();
-          return;
-        }
-
-        // Clicking own piece selects it instead
-        if (piece && pieceColor(piece) === _myColor) {
-          _selectedCell = { r: r, c: c };
-          _validMoves = getValidMoves(board, r, c, _state);
-          render();
-          return;
-        }
-
-        // Click elsewhere deselects
-        _selectedCell = null;
-        _validMoves = [];
-        render();
-        return;
-      }
-
-      // No selection yet, select own piece
-      if (piece && pieceColor(piece) === _myColor) {
-        _selectedCell = { r: r, c: c };
-        _validMoves = getValidMoves(board, r, c, _state);
-        render();
-      }
-    }
-
-    function escapeHtml(str) {
-      var div = document.createElement('div');
-      div.appendChild(document.createTextNode(str));
-      return div.innerHTML;
-    }
-
-    // ---- Public handler interface ----
+    // ═══════════════════════════════════════
+    // PUBLIC INTERFACE
+    // ═══════════════════════════════════════
 
     return {
       _active: false,
@@ -497,45 +343,54 @@
         _container = container;
         _ctx = ctx;
         _state = ctx.gameState;
-        _selectedCell = null;
-        _validMoves = [];
-        _lastMove = null;
         this._active = true;
-
         _myColor = getMyColor();
         _flipped = _myColor === 'b';
 
-        render();
+        // Show loading
+        _container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">Loading chess board...</div>';
+
+        // Dynamic import of Chessground
+        var self = this;
+        import('https://cdn.jsdelivr.net/npm/chessground@9.2.1/+esm').then(function (mod) {
+          if (!self._active) return;
+          _Chessground = mod.Chessground;
+          initBoard();
+        }).catch(function (err) {
+          console.error('Failed to load Chessground:', err);
+          _container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--danger)">Failed to load chess board. Please refresh.</div>';
+        });
       },
 
       onUpdate: function (data) {
         if (!this._active) return;
+        var lastMove = data.lastMove;
         if (data.state) {
           _state = data.state;
           _myColor = getMyColor();
+          // Store last move as algebraic squares for Chessground highlight
+          if (lastMove) {
+            _state._lastMoveSquares = [
+              toSquare(lastMove.fromR, lastMove.fromC),
+              toSquare(lastMove.toR, lastMove.toC)
+            ];
+          }
         }
-        if (data.lastMove) {
-          _lastMove = data.lastMove;
+        if (_cg) {
+          updateBoard();
+          renderChrome();
         }
-        _selectedCell = null;
-        _validMoves = [];
-        render();
       },
 
       destroy: function () {
+        if (_cg) { _cg.destroy(); _cg = null; }
         this._active = false;
-        _container = null;
-        _ctx = null;
-        _state = null;
-        _selectedCell = null;
-        _validMoves = [];
-        _lastMove = null;
-        _myColor = null;
+        _container = null; _ctx = null; _state = null; _myColor = null;
+        _Chessground = null;
       }
     };
   }
 
-  // Register with SpaceGames
   if (typeof SpaceGames !== 'undefined' && SpaceGames.registerGame) {
     SpaceGames.registerGame('chess', createHandler());
   }
