@@ -49,42 +49,41 @@
 
       // Main wrapper
       var wrapper = document.createElement('div');
-      wrapper.style.cssText = 'max-width: 600px; margin: 0 auto; padding: 16px; text-align: center;';
+      wrapper.className = 'hm-container';
       container.appendChild(wrapper);
 
-      // Progress: "Word X of 8"
+      // Progress
       this._progressEl = document.createElement('div');
-      this._progressEl.style.cssText = 'font-size: 14px; color: #aaa; margin-bottom: 12px; letter-spacing: 1px; text-transform: uppercase;';
+      this._progressEl.className = 'hm-progress';
       wrapper.appendChild(this._progressEl);
 
-      // Hangman ASCII figure container
+      // Hangman ASCII figure
       this._hangmanEl = document.createElement('pre');
-      this._hangmanEl.style.cssText = 'background: #1a1a2e; border: 2px solid #7c3aed; border-radius: 8px; padding: 16px 24px; margin: 0 auto 16px; display: inline-block; font-family: "Courier New", Courier, monospace; font-size: 20px; line-height: 1.4; color: #e0e0e0; text-align: left; user-select: none;';
+      this._hangmanEl.className = 'hm-figure';
       wrapper.appendChild(this._hangmanEl);
 
       // Word display
       this._wordEl = document.createElement('div');
-      this._wordEl.style.cssText = 'font-size: 32px; font-family: "Courier New", Courier, monospace; letter-spacing: 12px; margin: 20px 0; color: #fff; font-weight: bold; min-height: 40px;';
+      this._wordEl.className = 'hm-word';
       wrapper.appendChild(this._wordEl);
 
       // Hint text
       this._hintEl = document.createElement('div');
-      this._hintEl.style.cssText = 'font-size: 14px; color: #a78bfa; margin-bottom: 12px; font-style: italic;';
+      this._hintEl.className = 'hm-hint';
       wrapper.appendChild(this._hintEl);
 
-      // Status message area
+      // Status message
       this._messageEl = document.createElement('div');
-      this._messageEl.style.cssText = 'font-size: 16px; margin-bottom: 16px; min-height: 24px; font-weight: bold;';
+      this._messageEl.className = 'hm-message';
       wrapper.appendChild(this._messageEl);
 
       // Letter buttons container
       this._lettersEl = document.createElement('div');
-      this._lettersEl.style.cssText = 'margin: 0 auto 20px; max-width: 520px;';
       wrapper.appendChild(this._lettersEl);
 
       // Scoreboard
       this._scoresEl = document.createElement('div');
-      this._scoresEl.style.cssText = 'margin-top: 16px; text-align: left;';
+      this._scoresEl.className = 'hm-scores';
       wrapper.appendChild(this._scoresEl);
 
       // Build letter buttons
@@ -105,14 +104,14 @@
       this._lettersEl.innerHTML = '';
 
       var grid = document.createElement('div');
-      grid.style.cssText = 'display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; justify-items: center;';
+      grid.className = 'hm-letters';
 
       for (var i = 0; i < 26; i++) {
         var letter = String.fromCharCode(65 + i);
         var btn = document.createElement('button');
         btn.textContent = letter;
         btn.dataset.letter = letter;
-        btn.style.cssText = 'width: 42px; height: 42px; font-size: 16px; font-weight: bold; border: 1px solid #444; border-radius: 6px; background: #2a2a3e; color: #e0e0e0; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s, opacity 0.15s; font-family: inherit;';
+        btn.className = 'hm-letter-btn';
         btn.addEventListener('click', this._onLetterClick.bind(this));
         grid.appendChild(btn);
       }
@@ -212,11 +211,9 @@
 
         // Color the figure red when dead
         if (stage >= 6) {
-          this._hangmanEl.style.color = '#f87171';
-          this._hangmanEl.style.borderColor = '#ef4444';
+          this._hangmanEl.classList.add('dead');
         } else {
-          this._hangmanEl.style.color = '#e0e0e0';
-          this._hangmanEl.style.borderColor = '#7c3aed';
+          this._hangmanEl.classList.remove('dead');
         }
       }
 
@@ -272,41 +269,19 @@
         var btn = buttons[k];
         var letter = btn.dataset.letter;
 
+        // Reset classes
+        btn.className = 'hm-letter-btn';
+
         if (correctSet[letter]) {
-          // Correct guess - green
-          btn.style.background = '#166534';
-          btn.style.color = '#4ade80';
-          btn.style.borderColor = '#22c55e';
+          btn.classList.add('correct');
           btn.disabled = true;
-          btn.style.cursor = 'default';
-          btn.style.opacity = '1';
         } else if (wrongSet[letter]) {
-          // Wrong guess - red
-          btn.style.background = '#7f1d1d';
-          btn.style.color = '#f87171';
-          btn.style.borderColor = '#ef4444';
+          btn.classList.add('wrong');
           btn.disabled = true;
-          btn.style.cursor = 'default';
-          btn.style.opacity = '0.7';
-          btn.style.textDecoration = 'line-through';
         } else if (solved || failed) {
-          // Round over - disable remaining
-          btn.style.background = '#2a2a3e';
-          btn.style.color = '#666';
-          btn.style.borderColor = '#333';
           btn.disabled = true;
-          btn.style.cursor = 'default';
-          btn.style.opacity = '0.5';
-          btn.style.textDecoration = 'none';
         } else {
-          // Available - default
-          btn.style.background = '#2a2a3e';
-          btn.style.color = '#e0e0e0';
-          btn.style.borderColor = '#444';
           btn.disabled = false;
-          btn.style.cursor = 'pointer';
-          btn.style.opacity = '1';
-          btn.style.textDecoration = 'none';
         }
       }
     },
@@ -319,7 +294,7 @@
       var scores = state.scores || {};
       var playerIds = state.players || [];
 
-      var html = '<div style="font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; border-top: 1px solid #333; padding-top: 12px;">' + SpaceGames.t('score') + '</div>';
+      var html = '<div class="trivia-progress" style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:8px;">' + SpaceGames.t('score') + '</div>';
 
       for (var i = 0; i < playerIds.length; i++) {
         var pid = playerIds[i];
@@ -327,11 +302,11 @@
         var score = scores[pid] || 0;
         var isMe = pid === this._ctx.playerId;
 
-        html += '<div style="display: flex; justify-content: space-between; padding: 4px 8px; border-radius: 4px;' + (isMe ? ' background: rgba(124,58,237,0.15);' : '') + '">';
-        html += '<span style="color:' + (isMe ? '#a78bfa' : '#ccc') + ';">' + escHtml(name);
-        if (isMe) html += ' <span style="color: #666; font-size: 12px;">' + SpaceGames.t('you') + '</span>';
+        html += '<div class="trivia-score-card' + (isMe ? ' me' : '') + '">';
+        html += '<span class="score-name">' + escHtml(name);
+        if (isMe) html += ' <small>(' + SpaceGames.t('you') + ')</small>';
         html += '</span>';
-        html += '<span style="color: #fff; font-weight: bold;">' + score + '</span>';
+        html += '<span class="score-val">' + score + '</span>';
         html += '</div>';
       }
 
