@@ -130,6 +130,7 @@
     _container.appendChild(indicator);
 
     // -- Board --
+    var prevBoard = _container._prevBoard || [];
     var board = document.createElement('div');
     board.className = 'ttt-board';
 
@@ -141,15 +142,21 @@
         var classes = 'ttt-cell';
         if (val) {
           classes += ' taken';
-          classes += val === 'X' ? ' x' : ' o';
+          // Mark as new if this cell just appeared
+          if (!prevBoard[cellIdx] && val) classes += ' new';
         }
         if (winSet[cellIdx]) {
           classes += ' win';
         }
         cell.className = classes;
-        cell.textContent = val || '';
 
-        // Click handler: only for empty cells when it is our turn.
+        // Render SVG marks instead of text
+        if (val === 'X') {
+          cell.innerHTML = '<svg class="ttt-mark x-mark" viewBox="0 0 100 100"><line x1="20" y1="20" x2="80" y2="80"/><line x1="80" y1="20" x2="20" y2="80"/></svg>';
+        } else if (val === 'O') {
+          cell.innerHTML = '<svg class="ttt-mark o-mark" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35"/></svg>';
+        }
+
         if (!val && !winLine && isMyTurn(state)) {
           cell.addEventListener('click', function () {
             _ctx.socket.emit('game-move', { move: { cell: cellIdx } });
@@ -160,6 +167,7 @@
       })(i);
     }
 
+    _container._prevBoard = state.board.slice();
     _container.appendChild(board);
   }
 
